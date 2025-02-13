@@ -20,6 +20,7 @@ public:
 	int remove(int key);
 	int search(int key);
 	BTreeNode* findDeepestOccurance(int key);
+    std::pair<BTreeNode*, BTreeNode*> findSiblings(BTreeNode* node);
 	int mergeNodes(BTreeNode* node);
 	int mergeLeafNodes(BTreeNode* node);
 	int getHeight();

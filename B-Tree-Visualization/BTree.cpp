@@ -1,6 +1,7 @@
 #include "BTree.h"
 #include <queue>
 #include <iostream>
+using namespace std;
 /*
 * TODO:
 * When initialized, Creates an empty BTreeNode that is the root
@@ -203,9 +204,6 @@ int BTree::insert(int key) {
 	snprintf(instructions + strlen(instructions), sizeof(instructions) - sizeof(strlen(instructions)), "----------\n");
 	return 0;
 }
-
-
-
 /*
 int BTree::remove(int key)
 
@@ -349,157 +347,116 @@ BTreeNode* BTree::findDeepestOccurance(int key)
 	return nodes.back();
 }
 /*
-int BTree::mergeNodes(BTreeNode* node)
+pair<BTreeNode*, BTreeNode*> BTree::findSiblings(BTreeNode* node)
+finds the siblings nodes ------ modulized this portion of code to divide code into smaller function to be used within merge nodes
+*/
+pair<BTreeNode*, BTreeNode*> BTree::findSiblings(BTreeNode* node) {
+    BTreeNode* parent = node->getParent();
+    if (!parent) return {nullptr, nullptr};
+    int child_ndx = -1;
+    for (int i = 0; i <= parent->size(); i++) {
+        if (parent->getChild(i) == node) {
+            child_ndx = i;
+            break;
+        }
+    }
+    BTreeNode* leftSibling = (child_ndx > 0) ? parent->getChild(child_ndx - 1) : nullptr;
+    BTreeNode* rightSibling = (child_ndx < parent->numChildren() - 1) ? parent->getChild(child_ndx + 1) : nullptr;
 
-merges a given node in the B Tree with its sibling nodes
+    return {leftSibling, rightSibling};
+}
+/*
+int BTree::mergeNodes(BTreeNode* node)
+merges a given node in the B Tree with its sibling nodes ------ modulized this portion of the code below
 */
 int BTree::mergeNodes(BTreeNode* node)
 {
-	bool func_called = false;
-	if (node->getRoot() && node->size() == 0 && !node->getLeaf()) {
-		snprintf(instructions + strlen(instructions), sizeof(instructions) - sizeof(strlen(instructions)), "The root node is empty, and the child will become the new root.\n");
-		BTreeNode* temp = node;
-		_root = node->getChild(0);
-		_root->setRoot();
-		_root->removeParent();
-		//delete temp;
-		return 0;
-	}
-	else if (node->getLeaf()){
-		mergeLeafNodes(node);
-		return 0;
-	}
-	else if (node->getRoot()) {
-		return 0;
-	}
-	snprintf(instructions + strlen(instructions), sizeof(instructions) - sizeof(strlen(instructions)), "----------\n");
-	snprintf(instructions + strlen(instructions), sizeof(instructions) - sizeof(strlen(instructions)), "A internal node is under half size and needs to be merged with it's sibling.\n");
-	// find the index of the child from the parent node
-	BTreeNode* parent = node->getParent();
-	int child_ndx = -1;
-	for (int i = 0; i <= parent->size(); i++) {
-		if (parent->getChild(i) == node) {
-			child_ndx = i;
-			break;
-		}
+    bool func_called = false;
+    if (node->getRoot() && node->size() == 0 && !node->getLeaf()) {
+        snprintf(instructions + strlen(instructions), sizeof(instructions) - sizeof(strlen(instructions)), "The root node is empty, and the child will become the new root.\n");
+        BTreeNode* temp = node;
+        _root = node->getChild(0);
+        _root->setRoot();
+        _root->removeParent();
+        //delete temp;
+        return 0;
+    }
+    else if (node->getLeaf()){
+        mergeLeafNodes(node);
+        return 0;
+    }
+    else if (node->getRoot()) {
+        return 0;
+    }
+    snprintf(instructions + strlen(instructions), sizeof(instructions) - sizeof(strlen(instructions)), "----------\n");
+    snprintf(instructions + strlen(instructions), sizeof(instructions) - sizeof(strlen(instructions)), "A internal node is under half size and needs to be merged with it's sibling.\n");
+    // find the index of the child from the parent node
+    BTreeNode* parent = node->getParent();
+    int child_ndx = -1;
+    for (int i = 0; i <= parent->size(); i++) {
+        if (parent->getChild(i) == node) {
+            child_ndx = i;
+            break;
+        }
 
-	}
+    }
 
-	//this section of code is used to find the siblings 
-	BTreeNode* left_Sibiling = nullptr;
-	BTreeNode* right_Sibiling = nullptr;
-	BTreeNode* child_Moving = nullptr;
-	if (child_ndx == 0 && parent->numChildren() > 1)
-	{
-		// this section will handle if the node being merged is the leftmost child
-		snprintf(instructions + strlen(instructions), sizeof(instructions) - sizeof(strlen(instructions)), "the node being merged is child 1 into child 2.\n");
-		right_Sibiling = parent->getChild(1);
-		int key = parent->getKeyAtIndex(child_ndx);
-		parent->removeKey(key);
-		right_Sibiling->insertKey(key);
-		while (node->size() > 0) {
-			int index = node->size() - 1;
-			key = node->getKeyAtIndex(index);
-			child_Moving = node->getChild(index + 1);
-			child_Moving->setParent(right_Sibiling);
-			node->removeKey(key);
-			node->removeChild(index + 1);
-			right_Sibiling->insertKey(key);
-			right_Sibiling->addChild(child_Moving, 0);
-		}
-		child_Moving = node->getChild(0);
-		child_Moving->setParent(right_Sibiling);
-		node->removeChild(0);
-		right_Sibiling->addChild(child_Moving,0);
-		parent->removeChild(child_ndx);
-		if (right_Sibiling->getFull()) { this->splitNode(right_Sibiling); func_called = true; }
-		if (parent->size() < _middle) { this->mergeNodes(parent); func_called = true; }
-	}
-	else if (child_ndx == parent->numChildren() - 1) {
-		// this section will handle if the leaf node being merged is the right most child
-		snprintf(instructions + strlen(instructions), sizeof(instructions) - sizeof(strlen(instructions)), "The node being merged is child %d into child %d\n", child_ndx + 1, child_ndx);
-		left_Sibiling = parent->getChild(child_ndx - 1);
-		int key = parent->getKeyAtIndex(child_ndx - 1);
-		parent->removeKey(key);
-		left_Sibiling->insertKey(key);
-		while (node->size() > 0) {
-			key = node->getKeyAtIndex(0);
-			child_Moving = node->getChild(0);
-			child_Moving->setParent(left_Sibiling);
-			node->removeKey(key);
-			node->removeChild(0);
-			left_Sibiling->insertKey(key);
-			left_Sibiling->addChild(child_Moving, left_Sibiling->size());
-		}
-		child_Moving = node->getChild(0);
-		child_Moving->setParent(left_Sibiling);
-		node->removeChild(0);
-		left_Sibiling->addChild(child_Moving, left_Sibiling->size());
-		parent->removeChild(child_ndx);
-		if (left_Sibiling->getFull()) { this->splitNode(left_Sibiling); func_called = true; }
-		if (parent->size() < _middle) { this->mergeNodes(parent); func_called = true; }
-	}
-	else {
-		left_Sibiling = parent->getChild(child_ndx - 1);
-		right_Sibiling = parent->getChild(child_ndx + 1);
-		if (left_Sibiling->size() > right_Sibiling->size()) {
-			// merge to the right
-			snprintf(instructions + strlen(instructions), sizeof(instructions) - sizeof(strlen(instructions)), "The node being merged is child %d into child %d\n", child_ndx + 1, child_ndx+2);
-			int key = parent->getKeyAtIndex(child_ndx);
-			parent->removeKey(key);
-			right_Sibiling->insertKey(key);
-			while (node->size() > 0) {
-				int index = node->size() - 1;
-				key = node->getKeyAtIndex(index);
-				child_Moving = node->getChild(index + 1);
-				child_Moving->setParent(right_Sibiling);
-				node->removeKey(key);
-				node->removeChild(index + 1);
-				right_Sibiling->insertKey(key);
-				right_Sibiling->addChild(child_Moving, 0);
-			}
-			child_Moving = node->getChild(0);
-			child_Moving->setParent(right_Sibiling);
-			node->removeChild(0);
-			right_Sibiling->addChild(child_Moving, 0);
-			parent->removeChild(child_ndx);
-			if (right_Sibiling->getFull()) { this->splitNode(right_Sibiling); func_called = true; }
-			if (parent->size() < _middle) { this->mergeNodes(parent); func_called = true; }
-		}
-		else {
-			// merge to the left
-			snprintf(instructions + strlen(instructions), sizeof(instructions) - sizeof(strlen(instructions)), "The node being merged is child %d into child %d\n", child_ndx + 1, child_ndx);
-			int key = parent->getKeyAtIndex(child_ndx - 1);
-			parent->removeKey(key);
-			left_Sibiling->insertKey(key);
-			while (node->size() > 0) {
-				key = node->getKeyAtIndex(0);
-				child_Moving = node->getChild(0);
-				child_Moving->setParent(left_Sibiling);
-				node->removeKey(key);
-				node->removeChild(0);
-				left_Sibiling->insertKey(key);
-				left_Sibiling->addChild(child_Moving, left_Sibiling->size());
-			}
-			child_Moving = node->getChild(0);
-			child_Moving->setParent(left_Sibiling);
-			node->removeChild(0);
-			left_Sibiling->addChild(child_Moving, 0);
-			parent->removeChild(child_ndx);
-			if (left_Sibiling->getFull()) { this->splitNode(left_Sibiling); func_called = true; }
-			if (parent->size() < _middle) { this->mergeNodes(parent); func_called = true; }
-		}
+    //this section of code calls function to find the siblings was modified
+    auto [leftSibling, rightSibling] = findSiblings(node);
+    BTreeNode* targetSibling = nullptr;
 
-	}
-	//delete node;
-	if (!func_called) {
-		_root->findHeight();
-	}
-	return 0;
+    if (child_ndx == 0) {
+        // merge with right sibling
+        targetSibling = rightSibling;
+        snprintf(instructions + strlen(instructions), sizeof(instructions) - sizeof(strlen(instructions)),
+                 "Merging child 1 into child 2.\n");
+    } else if (child_ndx == parent->numChildren() - 1) {
+        // merge with left sibling
+        targetSibling = leftSibling;
+        snprintf(instructions + strlen(instructions), sizeof(instructions) - sizeof(strlen(instructions)),
+                 "Merging child %d into child %d\n", child_ndx + 1, child_ndx);
+    } else {
+        // merge with greater sibling
+        targetSibling = (leftSibling->size() > rightSibling->size()) ? rightSibling : leftSibling;
+        snprintf(instructions + strlen(instructions), sizeof(instructions) - sizeof(strlen(instructions)),
+                 "Merging child %d into child %d\n", child_ndx + 1, child_ndx + (targetSibling == rightSibling ? 2 : 0));
+    }
 
+    // merging occurs
+    int key = parent->getKeyAtIndex((targetSibling == leftSibling) ? child_ndx - 1 : child_ndx);
+    parent->removeKey(key);
+    targetSibling->insertKey(key);
+
+    while (node->size() > 0) {
+        int index = (targetSibling == leftSibling) ? 0 : node->size() - 1;
+        key = node->getKeyAtIndex(index);
+        BTreeNode* childMoving = node->getChild(index + (targetSibling == leftSibling ? 0 : 1));
+        childMoving->setParent(targetSibling);
+        node->removeKey(key);
+        node->removeChild(index + (targetSibling == leftSibling ? 0 : 1));
+        targetSibling->insertKey(key);
+        targetSibling->addChild(childMoving, (targetSibling == leftSibling) ? targetSibling->size() : 0);
+    }
+
+    BTreeNode* lastChild = node->getChild(0);
+    lastChild->setParent(targetSibling);
+    node->removeChild(0);
+    targetSibling->addChild(lastChild, (targetSibling == leftSibling) ? targetSibling->size() : 0);
+
+    parent->removeChild(child_ndx);
+
+    if (targetSibling->getFull()) {
+        this->splitNode(targetSibling);
+        func_called = true;
+    }
+    if (parent->size() < _middle) {
+        this->mergeNodes(parent);
+        func_called = true;
+    }
+
+    if (!func_called) _root->findHeight();
+    return 0;
 }
-
-
 /*
  int BTree::mergeLeafNodes
  
@@ -519,7 +476,9 @@ int BTree::mergeLeafNodes(BTreeNode* node)
 		}
 		
 	}
-	//this section of code is used to find the siblings 
+
+    //this section of code is used to find the siblings
+
 	BTreeNode* left_Sibiling = nullptr;
 	BTreeNode* right_Sibiling = nullptr;
 	if (child_ndx == 0 && parent->numChildren() > 1)
@@ -666,7 +625,5 @@ void BTree::printTree()
 			for (int i = 0; i < oldHeight; i++) { std::cout << "\t"; }
 		}
 		printNode(currentNode);
-
-	}
-	
+	}	
 }
