@@ -387,6 +387,46 @@ void BPlusTreeNode::splitKeys(BPlusTreeNode* nodeToGiveKeys) {
         nodeToGiveKeys->addKey(keyToMove);
     }
 }
+/*
+void BPlusTreeNode::sortNeighbor(BPlusTreeNode* newNode)---added for modularity
+Checks a nodes right neighbor, then sorts the newNode depending on if right neighbor is there .
+*/
+void BPlusTreeNode::sortNeighbor(BPlusTreeNode* newNode) {
+    // If there is no right neighbor for the current node, create a new neighbor and create a link between the two.
+    // If a right neighbor does exist, insert the new node between the two nodes, creating links as needed.
+    if(!rightNeighbor) {
+        rightNeighbor = newNode;
+        newNode->setLeftNeighbor(&*this);
+    } else {
+        BPlusTreeNode* oldNeighbor = rightNeighbor;
+        rightNeighbor = newNode;
+        newNode->setLeftNeighbor(&*this);
+        newNode->setRightNeighbor(oldNeighbor);
+        oldNeighbor->setLeftNeighbor(newNode);
+    }
+}
+/*
+void BPlusTreeNode::sortParent(BPlusTreeNode* newNode)---added for modularity
+Checks parent existence of node, then sorts the Newnode.
+*/
+void BPlusTreeNode::sortParent(BPlusTreeNode* newNode) {
+    // If there is no parent node, create the parent and create a link between the newly created parent and the current node.
+    if(!parent) {
+        parent = new BPlusTreeNode(height + 1, false);
+        parent->addChild(&(*this));
+    }
+    // Create the link needed between the new node and the parent.
+    parent->addChild(newNode);
+    newNode->setParent(parent);
+
+    // If the node is internal, remove the first key of the new node and give it to the parent.
+    // If the node is external (a leaf node), give the parent the first key of new node, but does not remove it from the new node.
+    if(!isLeaf) {
+        parent->addKey(newNode->removeKey(0));
+    } else {
+        parent->addKey((*(newNode->getKeys()))[0]);
+    }
+}
 
 /*
 bool BPlusTreeNode::splitNode()
@@ -404,40 +444,10 @@ bool BPlusTreeNode::splitNode() {
     if(!isLeaf) {
         splitChildren(newNode);
     }
-
-    // If there is no right neighbor for the current node, create a new neighbor and create a link between the two.
-    // If a right neighbor does exist, insert the new node between the two nodes, creating links as needed.
-    if(!rightNeighbor) {
-        rightNeighbor = newNode;
-        newNode->setLeftNeighbor(&*this);
-    } else {
-        BPlusTreeNode* oldNeighbor = rightNeighbor;
-        rightNeighbor = newNode;
-        newNode->setLeftNeighbor(&*this);
-        newNode->setRightNeighbor(oldNeighbor);
-        oldNeighbor->setLeftNeighbor(newNode);
-    }
-
-    // If there is no parent node, create the parent and create a link between the newly created parent and the current node.
-    if(!parent) {
-        parent = new BPlusTreeNode(height + 1, false);
-        parent->addChild(&(*this));
-    }
-    // Create the link needed between the new node and the parent.
-    parent->addChild(newNode);
-    newNode->setParent(parent);
-    
-    // If the node is internal, remove the first key of the new node and give it to the parent.
-    // If the node is external (a leaf node), give the parent the first key of new node, but does not remove it from the new node.
-    if(!isLeaf) {
-        parent->addKey(newNode->removeKey(0));
-    } else {
-        parent->addKey((*(newNode->getKeys()))[0]);
-    }
-
+    sortNeighbor(newNode);
+    sortParent(newNode);
     return true;
 }
-
 /*
 bool BPlusTreeNode::findAndReplaceKeyInAncestry(int key, int newKey)
 
@@ -503,7 +513,6 @@ bool BPlusTreeNode::takeLeft() {
         BPlusTreeNode* newChild = leftNeighbor->removeChild((int)leftNeighbor->getChildren()->size() - 1);
         addChild(newChild);
         newChild->setParent(this);
-
     }
 
     return true;
@@ -566,7 +575,6 @@ void BPlusTreeNode::mergeKeys(BPlusTreeNode* nodeToMergeWith) {
     if(!nodeToMergeWith) {
         return;
     }
-
     while(keys.size() > 0) {
         nodeToMergeWith->addKey(removeKey(0));
     }

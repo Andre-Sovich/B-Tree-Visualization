@@ -62,6 +62,8 @@ class BPlusTreeNode {
 
     void splitChildren(BPlusTreeNode* nodeToGiveChildren);
     void splitKeys(BPlusTreeNode* nodeToGiveKeys);
+    void sortNeighbor(BPlusTreeNode* newNode);// modifed to add sorting function of neighbor/parent node
+    void sortParent(BPlusTreeNode* newNode);
     bool splitNode();
 
     // For Deletion
