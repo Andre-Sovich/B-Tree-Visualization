@@ -185,11 +185,13 @@ void BPlusTreeNode::addKey(int key)
 
 Adds the given key to the node's keys vector in the correct position to maintain ascending order.
 */
-void BPlusTreeNode::addKey(int key) {
+char* BPlusTreeNode::addKey(int key) {
+    char instr[] = "";
     // If there are no keys, simply add the key to the vector.
     if(keys.size() < 1) {
         keys.push_back(key);
-        return;
+        sprintf(instr, "%si%d.", instr, key);
+        return instr;
     }
 
     for(int i = 0; i <= (int)keys.size(); i++) {

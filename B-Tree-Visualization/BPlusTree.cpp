@@ -13,7 +13,6 @@ BPlusTree::BPlusTree(int maxKeys) {
     maxKeysLeaf = maxKeys;
     root = new BPlusTreeNode(0, true);
 }
-
 /*
 BPlusTreeNode* BPlusTree::getRoot()
 
