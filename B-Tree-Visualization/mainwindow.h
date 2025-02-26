@@ -9,6 +9,7 @@
 #include <QMessageBox>
 #include <QWheelEvent>
 #include <vector>
+#include <optional>
 #include <BPlusTree.hh>
 #include <BStarTree.hh>
 #include <BTree.h>
@@ -32,6 +33,24 @@ public:
     std::vector<QGraphicsItemGroup*> displayItems;
     QMessageBox inputErrorMsgBox;
     int tree_identifier;
+    //All variables needed in the display functions and theif defaults.
+    int oldHeight;
+    int currentY;
+    int minX;
+    int maxX;
+    int currentDx;
+    int currentX;
+    int rectWidth;
+    int rectHeight;
+    int gapSize;
+    int layerLevel;
+    int height;
+    int parentIndex;
+    int childIndex;
+    int currentParentDx;
+    int parentLength;
+    vector<int> prevXs;
+    vector<int> currentXs;
     int max_degree;
     BTree* b_tree;
     BPlusTree* bplus_tree;
@@ -60,13 +79,31 @@ private slots:
 
     bool isNumber(std::string string);
 
-    void displayTreeFromQueue(queue<BPlusTreeNode*> q);
+    QGraphicsRectItem* makeRectangle(int width, int height);
 
-    void displayTreeFromQueueFind(queue<BPlusTreeNode*> q, int find_value);
+    string makeNodeText(BTreeNode currentNode);
 
-    void displayTreeFromQueue(queue<BTreeNode*> q);
+    string makeNodeText(BPlusTreeNode currentNode);
 
-    void displayTreeFromQueueFind(queue<BTreeNode*> q, int find_value);
+    QGraphicsTextItem* makeQString(string input);
+
+    void updateLayer(vector<int>& previousXs, vector<int>& currentXs, BPlusTreeNode* currentNode, BPlusTreeNode*& oldParent);
+
+    void updateLayer(vector<int>& prevXs, vector<int>& currentXs, BTreeNode* currentNode, BTreeNode*& oldParent);
+
+    void updateIndexes(vector<int>& prevXs, vector<int>& currentXs, BPlusTreeNode*& currentNode, BPlusTreeNode*& oldParent);
+
+    void updateIndexes(vector<int>& prevXs, vector<int>& currentXs, BTreeNode*& currentNode, BTreeNode*& oldParent);
+
+    void initializeVariables();
+
+    void drawLines(vector<int>& prevXs, vector<int>& currentXs, BTreeNode*& oldParent);
+
+    void drawLines(vector<int>& prevXs, vector<int>& currentXs, BPlusTreeNode*& oldParent);
+
+    void displayTreeFromQueue(queue<BPlusTreeNode*> q, std::optional<int> find_value);
+
+    void displayTreeFromQueue(queue<BTreeNode*> q, std::optional<int> find_value);
 
     void on_find_button_clicked();
 
