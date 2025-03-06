@@ -28,6 +28,7 @@ public:
     ~MainWindow();
 
     void onAddTreeNode();
+    void onMovementTreeTile(QPushButton* currentTile, QPushButton* compareTile, char animationType);
     void onCompareTreeNodes();
     void onLeftTreeNode();
     void onRightTreeNode();

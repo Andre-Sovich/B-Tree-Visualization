@@ -29,6 +29,8 @@ MainWindow::MainWindow(QWidget *parent)
 }
 //global variables
 QPushButton *tile;
+QPushButton *currentTile;
+QPushButton *compareTile;
 MainWindow::~MainWindow()
 {
 }
@@ -49,21 +51,21 @@ void MainWindow::onAddTreeNode(){
     tile->show();
 }
 
-void MainWindow::onCompareTreeNodes(){
+void MainWindow::onMovementTreeTile(QPushButton* currentTile, QPushButton* compareTile, char animationType){
     // find new position
-    QRect endPos = ui->tile2->geometry();
-    endPos = endPos.translated(0,-60); //based on tile -1 * (height + space)
+    QRect endPos = ui->compareTile->geometry();
+    endPos = endPos.translated(50,0); //based on tile width + spac // replace with global x and y positon
     // animate tree node
-    animation = new QPropertyAnimation(tile, "geometry");
+    animation = new QPropertyAnimation(currentTile, "geometry");
     animation->setDuration(250);
-    animation->setStartValue(tile->geometry());
+    animation->setStartValue(currentTile->geometry());
     animation->setEndValue(endPos);
     animation->start();
-    tile->show();
+    currentTile->show();
 }
 
 void MainWindow::onLeftTreeNode(){
-    // find new position
+    // find new position /// modify to include onMovementTreeTile width x.y //
     QRect endPos = ui->tile2->geometry();
     endPos = endPos.translated(-50,0); //based on tile width + spac
     // animate tree node
@@ -74,7 +76,6 @@ void MainWindow::onLeftTreeNode(){
     animation->start();
     tile->show();
 }
-
 void MainWindow::onRightTreeNode(){
     // find new position
     QRect endPos = ui->tile2->geometry();
@@ -104,6 +105,14 @@ void MainWindow::onChildTreeNode(){
     animation->start();
     tile->show();
 }
+
+// void MainWindow::highlightTiles(){// will use the tilesLL
+
+// }
+
+// void MainWindow::removeTile(){//
+
+// }
 
 void MainWindow::on_createButton_clicked()
 {
