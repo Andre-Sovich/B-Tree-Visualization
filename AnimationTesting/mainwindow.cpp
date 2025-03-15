@@ -100,45 +100,15 @@ void MainWindow::onMovementTree(QPushButton *currentTile, QPushButton *compareTi
 
 void MainWindow::onCompareTreeNodes(){
     onMovementTree(tile, ui->tile2, 'c');
-    // // find new position
-    // QRect endPos = ui->tile2->geometry();
-    // endPos = endPos.translated(0,-60); //based on tile -1 * (height + space)
-    // // animate tree node
-    // animation = new QPropertyAnimation(tile, "geometry");
-    // animation->setDuration(250);
-    // animation->setStartValue(tile->geometry());
-    // animation->setEndValue(endPos);
-    // animation->start();
-    // tile->show();
 }
 
 
 void MainWindow::onLeftTreeNode(){
     onMovementTree(tile, ui->tile2, 'l');
-    // // find new position
-    // QRect endPos = ui->tile2->geometry();
-    // endPos = endPos.translated(-50,0); //based on tile width + spac
-    // // animate tree node
-    // animation = new QPropertyAnimation(tile, "geometry");
-    // animation->setDuration(250);
-    // animation->setStartValue(tile->geometry());
-    // animation->setEndValue(endPos);
-    // animation->start();
-    // tile->show();
 }
 
 void MainWindow::onRightTreeNode(){
     onMovementTree(tile, ui->tile2, 'r');
-    // // find new position
-    // QRect endPos = ui->tile2->geometry();
-    // endPos = endPos.translated(50,0); //based on tile width + spac
-    // // animate tree node
-    // animation = new QPropertyAnimation(tile, "geometry");
-    // animation->setDuration(250);
-    // animation->setStartValue(tile->geometry());
-    // animation->setEndValue(endPos);
-    // animation->start();
-    // tile->show();
 }
 void MainWindow::onRemoveWidget() {
     QPushButton* button = qobject_cast<QPushButton*>(sender());
@@ -147,16 +117,6 @@ void MainWindow::onRemoveWidget() {
 
 void MainWindow::onChildTreeNode(){
     onMovementTree(tile, ui->tile2, 'h');
-    // // find new position
-    // QRect endPos = ui->tile2->geometry();
-    // endPos = endPos.translated(0,80); //based on tile width + spac
-    // // animate tree node
-    // animation = new QPropertyAnimation(tile, "geometry");
-    // animation->setDuration(250);
-    // animation->setStartValue(tile->geometry());
-    // animation->setEndValue(endPos);
-    // animation->start();
-    // tile->show();
 }
 
 void MainWindow::on_createButton_clicked()
