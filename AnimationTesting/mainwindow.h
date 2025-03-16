@@ -60,9 +60,4 @@ private://Jmods
     bool drawingLine = false;
 };
 
-// private:
-//     Ui::MainWindow *ui;
-//     void addTreeNode(QString name);
-//     QPropertyAnimation *animation;
-// };
 #endif // MAINWINDOW_H
