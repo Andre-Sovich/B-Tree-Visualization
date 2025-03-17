@@ -99,13 +99,15 @@ void MainWindow::onMovementTree(QPushButton *currentTile, QPushButton *compareTi
     connect(animation, &QPropertyAnimation::finished, this, [this]() { //Jmods ----- moved under on movement instead of under child tree--Mmods
         lineAnimation(ui->tile2, tile); // Call lineAnimation only after movement
     });
+    //highlightNode({tile});//Jmod ---
+    // onHighlightTile(tile);//test if function works--Mmod
 }
 
 void MainWindow::onCompareTreeNodes(){
     onMovementTree(tile, ui->tile2, 'c');
 }
 
-void MainWindow::lineAnimation(QPushButton* parent, QPushButton* child){
+void MainWindow::lineAnimation(QPushButton* parent, QPushButton* child){//Jmods
     if(!parent || !child) return;
 
     QRect parentPos = parent->geometry();
@@ -120,7 +122,7 @@ void MainWindow::lineAnimation(QPushButton* parent, QPushButton* child){
     lineAnimationTimer->start(10);
 
 }
-void MainWindow::moveLine(){
+void MainWindow::moveLine(){//Jmods
     if(lineAnimationStep >= totalLineSteps){
         lineAnimationTimer->stop();
         drawingLine = false;
@@ -139,7 +141,7 @@ void MainWindow::moveLine(){
 
 
 void MainWindow::onLeftTreeNode(){
-    onMovementTree(tile, ui->tile2, 'l');
+    onMovementTree(tile, ui->tile2, 'l');//Mmods
 }
 
 void MainWindow::onRightTreeNode(){
