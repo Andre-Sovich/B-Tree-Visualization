@@ -39,6 +39,7 @@ public:
     void highlightNode(const QList<QPushButton*>& tiles);
     void highlightNodeWithColor(const QList<QPushButton*>& tiles, const QString& color);
     void shiftNode(const QList<QPushButton*>& tiles);
+    void outlineNode(const QList<QPushButton*>& tiles);
 
 private slots:
     void on_pushButton_clicked();
@@ -56,5 +57,8 @@ private:
     QPoint lineParent, lineChild, movingPoint;
     QLine animatedLine;
     bool drawingLine = false;
+    bool outliningNode = false;
+    int rectWidth;
+    int rectHeight;
 };
 #endif // MAINWINDOW_H

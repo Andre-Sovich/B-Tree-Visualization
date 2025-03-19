@@ -129,6 +129,7 @@ void MainWindow::onRightTreeNode(){
     animation->setEndValue(endPos);
     animation->start();
     tile->show();
+    outlineNode({ui->tile2, tile});
 }
 void MainWindow::onRemoveWidget() {
     QPushButton* button = qobject_cast<QPushButton*>(sender());
@@ -171,6 +172,9 @@ void MainWindow::paintEvent(QPaintEvent *event) {
     if(drawingLine){
         painter.drawLine(animatedLine);
     }
+    if(outliningNode){
+
+    }
 }
 
 //input can be put in as {tile1, tile2, tile3} even if it's a single tile
@@ -204,5 +208,19 @@ void MainWindow::shiftNode(const QList<QPushButton*>& tiles){
             tile->show();
         }
     }
+}
+void MainWindow::outlineNode(const QList<QPushButton*>& tiles){
+    outliningNode = true;
+    QPainter painter(this);
+    int numOfNodes = tiles.count();
+    QPoint nodeBox(tiles[0]->geometry().x()+10, tiles[0]->geometry().y()+10);
+    rectWidth = numOfNodes*nodeWidth + 20;
+    rectHeight = numOfNodes*nodeHeight + 20;
+    QPen pen;
+    pen.setColor(Qt::black);
+    painter.setPen(pen);
+    painter.setBrush(Qt::transparent);
+    painter.drawRect(tiles[0]->geometry().x()-10, tiles[0]->geometry().y()-10, rectWidth, rectHeight);
+
 }
 
