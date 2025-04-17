@@ -27,13 +27,13 @@ class MainWindow : public QMainWindow
 public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
-    void onAddTreeTile();//Jmods
-    void onMovementTree(QPushButton *currentTile, QPushButton *compareTile, char animationType); // added on MovementTree function --Mmods
-    void onCompareTreeNodes();
-    void onLeftTreeNode();
-    void onRightTreeNode();
-    void onChildTreeNode();
-    void onRemoveWidget();
+    void onAddTreeTile(std::string& key);//J/Mmods
+    void onMovementTree(std::string& key,std::string& ref, char animationType); // added on MovementTree function --Mmods
+    void onCompareTreeNodes(std::string& key,std::string& ref);//Mods
+    void onLeftTreeNode(std::string& key,std::string& ref);
+    void onRightTreeNode(std::string& key,std::string& ref);
+    void onChildTreeNode(std::string& key,std::string& ref);
+    void onRemoveWidget(std::string& key);
     void onRemoveTile();//Mmods
     void onHighlightTile(QPushButton* highlightTile);//Mmods
     void lineAnimation(QPushButton* parent, QPushButton* child);//Jmods

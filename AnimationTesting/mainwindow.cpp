@@ -13,7 +13,10 @@ MainWindow::MainWindow(QWidget *parent)
 
     QObject::connect(
         ui->createButton, &QPushButton::clicked,
-        this, &MainWindow::onAddTreeTile);//Jmods
+        this, [this]() {
+        std::string key = "5";
+        onAddTreeTile(key);});//testing key defined
+        //this, &MainWindow::onAddTreeTile(key));//Jmods
 
     QObject::connect(
         ui->compareButton, &QPushButton::clicked,
@@ -47,15 +50,16 @@ MainWindow::~MainWindow()
 }
 
 
-void MainWindow::onAddTreeTile(){
+void MainWindow::onAddTreeTile(std::string& key){
 
     tile = new QPushButton(ui->centralwidget);
     // create new tree node
     tile->setGeometry(340,110, 0, 0);
-    tile->setText("Tile");
-    tile->setProperty("remove",false);// won't remove tile if false--set to true to remove on click
+    tile->setText(QString::fromStdString(key));//Mmod
+    tile->setProperty("remove",true);// won't remove tile if false--set to true to remove on click
+    //hashmapname[key] = tile;
 
-    connect(tile, &QPushButton::clicked, this, &MainWindow::onRemoveTile);//Mmods
+    connect(tile, &QPushButton::clicked, this, &MainWindow::onRemoveTile);//Mmods ---- needs fixing for for
     //onHighlightTile(tile);//test if function works
 
 
@@ -69,8 +73,10 @@ void MainWindow::onAddTreeTile(){
     tile->show();
 }
 
-void MainWindow::onMovementTree(QPushButton *currentTile, QPushButton *compareTile, char animationType){//Mmods
-    // find new position
+void MainWindow::onMovementTree(std::string& key,std::string& ref, char animationType){//Mmods
+    // QPushButton* currentTile = hashmapname[key];// will update after integrating changes so currently not working
+    // QPushButton* compareTile = hashmapname[ref];
+    // // find new position
     QRect endPos = compareTile->geometry();
     switch(animationType) {
     case 'c': //compare
@@ -99,12 +105,13 @@ void MainWindow::onMovementTree(QPushButton *currentTile, QPushButton *compareTi
     connect(animation, &QPropertyAnimation::finished, this, [this]() { //Jmods ----- moved under on movement instead of under child tree--Mmods
         lineAnimation(ui->tile2, tile); // Call lineAnimation only after movement
     });
-    //highlightNode({tile});//Jmod ---
+    highlightNode({tile});//Jmod ---
     // onHighlightTile(tile);//test if function works--Mmod
 }
 
-void MainWindow::onCompareTreeNodes(){
-    onMovementTree(tile, ui->tile2, 'c');
+void MainWindow::onCompareTreeNodes(std::string& key,std::string& ref){//MMod
+    onMovementTree(key, ref, 'c');
+   // onMovementTree(tile, ui->tile2, 'c');
 }
 
 void MainWindow::lineAnimation(QPushButton* parent, QPushButton* child){//Jmods
@@ -140,20 +147,23 @@ void MainWindow::moveLine(){//Jmods
 }
 
 
-void MainWindow::onLeftTreeNode(){
-    onMovementTree(tile, ui->tile2, 'l');//Mmods
+void MainWindow::onLeftTreeNode(std::string& key,std::string& ref){//mmod
+    onMovementTree(key, ref, 'l');
+    //onMovementTree(tile, ui->tile2, 'l');//Mmods
 }
 
-void MainWindow::onRightTreeNode(){
-    onMovementTree(tile, ui->tile2, 'r');
+void MainWindow::onRightTreeNode(std::string& key,std::string& ref){//mmods
+    onMovementTree(key, ref, 'r');
+    //onMovementTree(tile, ui->tile2, 'r');
 }
-void MainWindow::onRemoveWidget() {
+void MainWindow::onRemoveWidget(std::string& key) {// parameter may be uneccesary
     QPushButton* button = qobject_cast<QPushButton*>(sender());
     delete button;
 }
 
-void MainWindow::onChildTreeNode(){
-    onMovementTree(tile, ui->tile2, 'h');
+void MainWindow::onChildTreeNode(std::string& key,std::string& ref){//mmods
+    onMovementTree(key, ref, 'h');
+   // onMovementTree(tile, ui->tile2, 'h');
 }
 void MainWindow::on_pushButton_clicked()//Jmods
 {
