@@ -28,19 +28,21 @@ MainWindow::MainWindow(QWidget *parent)
         ui->childButton, &QPushButton::clicked,
         this, &MainWindow::onChildTreeNode);
 
+    this->tileMap["tile1"] = ui->tile2;
+    tileCount = 1;
     //must initialize line timer--Jmods
     lineAnimationTimer = new QTimer(this);//Jmods
     connect(lineAnimationTimer, &QTimer::timeout, this, &MainWindow::moveLine);
 }
 //global variables
-QPushButton *tile;
+//QPushButton *tile;
 int nodeWidth = 50; //150; -- Jmods
 int nodeHeight = 50; //25;
 int startingXpos = 80;
 int startingYpos = 70;// changed to 70 for onMovement
 QPushButton *currentTile;
-QPushButton *compareTile;//Mmods
-
+//QPushButton *compareTile;//Mmods
+//QHash<QString, QPushButton*> tileMap;
 
 MainWindow::~MainWindow()
 {
@@ -49,24 +51,27 @@ MainWindow::~MainWindow()
 
 void MainWindow::onAddTreeTile(){
 
-    tile = new QPushButton(ui->centralwidget);
+    QPushButton* newTile = new QPushButton(ui->centralwidget);
     // create new tree node
-    tile->setGeometry(340,110, 0, 0);
-    tile->setText("Tile");
-    tile->setProperty("remove",false);// won't remove tile if false--set to true to remove on click
+    newTile->setGeometry(340,110, 0, 0);
+    newTile->setText("Tile");
+    newTile->setProperty("remove",false);// won't remove tile if false--set to true to remove on click
 
-    connect(tile, &QPushButton::clicked, this, &MainWindow::onRemoveTile);//Mmods
+    connect(newTile, &QPushButton::clicked, this, &MainWindow::onRemoveTile);//Mmods
     //onHighlightTile(tile);//test if function works
 
 
 
     // animate tree node
-    animation = new QPropertyAnimation(tile, "geometry");
+    animation = new QPropertyAnimation(newTile, "geometry");
     animation->setDuration(250);
-    animation->setStartValue(tile->geometry());
+    animation->setStartValue(newTile->geometry());
     animation->setEndValue(QRect(340,110,50,50));
     animation->start();
-    tile->show();
+    newTile->show();
+    tileCount++;
+    QString tileString =  "tile" + QString::number(this->tileCount);
+    this->tileMap[tileString] = newTile;
 }
 
 void MainWindow::onMovementTree(QPushButton *currentTile, QPushButton *compareTile, char animationType){//Mmods
@@ -99,17 +104,17 @@ void MainWindow::onMovementTree(QPushButton *currentTile, QPushButton *compareTi
     animation->start();
     currentTile->show();
     connect(animation, &QPropertyAnimation::finished, this, [=]() {
-        lineAnimation(ui->tile2, tile); // Call lineAnimation only after movement
+        lineAnimation(this->tileMap["tile1"], this->tileMap["tile2"]); // Call lineAnimation only after movement
 
         if (animationType == 'r') outlineNode({compareTile, currentTile});
         if (animationType == 'l') outlineNode({currentTile, compareTile});
     });
     //highlightNode({tile});//Jmod ---
-     onHighlightTile(tile);//test if function works--Mmod
+     onHighlightTile(this->tileMap["tile2"]);//test if function works--Mmod
 }
 
 void MainWindow::onCompareTreeNodes(){
-    onMovementTree(tile, ui->tile2, 'c');
+    onMovementTree(this->tileMap["tile2"], this->tileMap["tile1"], 'c');
 }
 
 void MainWindow::lineAnimation(QPushButton* parent, QPushButton* child){//Jmods
@@ -133,7 +138,7 @@ void MainWindow::moveLine(){//Jmods
         drawingLine = false;
         return;
     }
-    QRect childPos = tile->geometry();
+    QRect childPos = this->tileMap["tile2"]->geometry();
     qreal progress = (qreal)lineAnimationStep / totalLineSteps;
     movingPoint.setX(lineParent.x() + (progress*(lineChild.x()- lineParent.x())));
     movingPoint.setY(lineParent.y() + (progress * (childPos.center().y() - lineParent.y())));
@@ -146,11 +151,11 @@ void MainWindow::moveLine(){//Jmods
 
 
 void MainWindow::onLeftTreeNode(){
-    onMovementTree(tile, ui->tile2, 'l');//Mmods
+    onMovementTree(this->tileMap["tile2"], this->tileMap["tile1"], 'l');//Mmods
 }
 
 void MainWindow::onRightTreeNode(){
-    onMovementTree(tile, ui->tile2, 'r');
+    onMovementTree(this->tileMap["tile2"], this->tileMap["tile1"], 'r');
 }
 void MainWindow::onRemoveWidget() {
     QPushButton* button = qobject_cast<QPushButton*>(sender());
@@ -158,7 +163,7 @@ void MainWindow::onRemoveWidget() {
 }
 
 void MainWindow::onChildTreeNode(){
-    onMovementTree(tile, ui->tile2, 'h');
+    onMovementTree(this->tileMap["tile2"], this->tileMap["tile1"], 'h');
 }
 void MainWindow::on_pushButton_clicked()//Jmods
 {
@@ -188,15 +193,15 @@ void MainWindow::paintEvent(QPaintEvent *event) { //Jmods
 //input can be put in as {tile1, tile2, tile3} even if it's a single tile
 void MainWindow::highlightNode(const QList<QPushButton*>& tiles){//Jmods
     for(int i = 0; i < tiles.count(); i++){
-        if(tile){
-            tile->setStyleSheet("background-color: orange;");
+        if(tiles[i]){
+            tiles[i]->setStyleSheet("background-color: orange;");
         }
     }
 }
 void MainWindow::highlightNodeWithColor(const QList<QPushButton*>& tiles, const QString& color){//Jmods
     for(int i = 0; i < tiles.count(); i++){
-        if(tile){
-            tile->setStyleSheet(QString("background-color: %1").arg(color));
+        if(tiles[i]){
+            tiles[i]->setStyleSheet(QString("background-color: %1").arg(color));
         }
     }
 }
@@ -204,16 +209,16 @@ void MainWindow::shiftNode(const QList<QPushButton*>& tiles){//Jmods
     for(int i = 0; i < tiles.count(); i++){
         int shiftAmount = nodeWidth/2;
         QRect endPos;
-        if(tile){
+        if(tiles[i]){
             endPos = tiles[i]->geometry();
             endPos = endPos.translated(-shiftAmount,0); //based on tile width + spac
             // animate tree node
-            animation = new QPropertyAnimation(tile, "geometry");
+            animation = new QPropertyAnimation(tiles[i], "geometry");
             animation->setDuration(250);
-            animation->setStartValue(tile->geometry());
+            animation->setStartValue(tiles[i]->geometry());
             animation->setEndValue(endPos);
             animation->start();
-            tile->show();
+            tiles[i]->show();
         }
     }
 }

@@ -14,6 +14,10 @@
 #include <vector>
 #include <QList>
 #include <QGraphicsDropShadowEffect>
+#include <QHash>
+
+//extern QHash<QString, QPushButton*> tileMap;
+
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -61,14 +65,13 @@ private:
     int lineAnimationStep = 0;
     int totalLineSteps = 50;
     QPoint lineParent, lineChild, movingPoint;
-    QPoint nodeBox;
     QLine animatedLine;
     bool drawingLine = false;
-    bool outliningNode = false;
     int rectWidth;
     int rectHeight;
-    QList<QPushButton*> outlinedTiles;
     bool drawOutlineRect = false;
     QRect outlineRect;
+    QHash<QString, QPushButton*> tileMap;
+    int tileCount;
 };
 #endif // MAINWINDOW_H
