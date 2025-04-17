@@ -8,6 +8,7 @@
 #define _CMMN_INTRIN_FUNC 1
 #define _CPPRTTI 
 #define _ISO_VOLATILE 1
+#define _DEBUG 
 #define _MT 
 #define _DLL 
 #define _UTF8 

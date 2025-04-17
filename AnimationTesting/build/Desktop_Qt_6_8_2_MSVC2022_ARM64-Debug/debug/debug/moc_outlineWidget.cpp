@@ -1,12 +1,12 @@
 /****************************************************************************
-** Meta object code from reading C++ file 'qttreenodewidget.h'
+** Meta object code from reading C++ file 'outlineWidget.h'
 **
 ** Created by: The Qt Meta Object Compiler version 68 (Qt 6.8.2)
 **
 ** WARNING! All changes made in this file will be lost!
 *****************************************************************************/
 
-#include "../../../qttreenodewidget.h"
+#include "../../../../outlineWidget.h"
 #include <QtCore/qmetatype.h>
 
 #include <QtCore/qtmochelpers.h>
@@ -16,7 +16,7 @@
 
 #include <QtCore/qxptype_traits.h>
 #if !defined(Q_MOC_OUTPUT_REVISION)
-#error "The header file 'qttreenodewidget.h' doesn't include <QObject>."
+#error "The header file 'outlineWidget.h' doesn't include <QObject>."
 #elif Q_MOC_OUTPUT_REVISION != 68
 #error "This file was generated using the moc from 6.8.2. It"
 #error "cannot be used with the include files from this version of Qt."
@@ -31,19 +31,19 @@ QT_WARNING_PUSH
 QT_WARNING_DISABLE_DEPRECATED
 QT_WARNING_DISABLE_GCC("-Wuseless-cast")
 namespace {
-struct qt_meta_tag_ZN16QtTreeNodeWidgetE_t {};
+struct qt_meta_tag_ZN13OutlineWidgetE_t {};
 } // unnamed namespace
 
 
 #ifdef QT_MOC_HAS_STRINGDATA
-static constexpr auto qt_meta_stringdata_ZN16QtTreeNodeWidgetE = QtMocHelpers::stringData(
-    "QtTreeNodeWidget"
+static constexpr auto qt_meta_stringdata_ZN13OutlineWidgetE = QtMocHelpers::stringData(
+    "OutlineWidget"
 );
 #else  // !QT_MOC_HAS_STRINGDATA
 #error "qtmochelpers.h not found or too old."
 #endif // !QT_MOC_HAS_STRINGDATA
 
-Q_CONSTINIT static const uint qt_meta_data_ZN16QtTreeNodeWidgetE[] = {
+Q_CONSTINIT static const uint qt_meta_data_ZN13OutlineWidgetE[] = {
 
  // content:
       12,       // revision
@@ -59,42 +59,42 @@ Q_CONSTINIT static const uint qt_meta_data_ZN16QtTreeNodeWidgetE[] = {
        0        // eod
 };
 
-Q_CONSTINIT const QMetaObject QtTreeNodeWidget::staticMetaObject = { {
+Q_CONSTINIT const QMetaObject OutlineWidget::staticMetaObject = { {
     QMetaObject::SuperData::link<QWidget::staticMetaObject>(),
-    qt_meta_stringdata_ZN16QtTreeNodeWidgetE.offsetsAndSizes,
-    qt_meta_data_ZN16QtTreeNodeWidgetE,
+    qt_meta_stringdata_ZN13OutlineWidgetE.offsetsAndSizes,
+    qt_meta_data_ZN13OutlineWidgetE,
     qt_static_metacall,
     nullptr,
-    qt_incomplete_metaTypeArray<qt_meta_tag_ZN16QtTreeNodeWidgetE_t,
+    qt_incomplete_metaTypeArray<qt_meta_tag_ZN13OutlineWidgetE_t,
         // Q_OBJECT / Q_GADGET
-        QtPrivate::TypeAndForceComplete<QtTreeNodeWidget, std::true_type>
+        QtPrivate::TypeAndForceComplete<OutlineWidget, std::true_type>
     >,
     nullptr
 } };
 
-void QtTreeNodeWidget::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, void **_a)
+void OutlineWidget::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, void **_a)
 {
-    auto *_t = static_cast<QtTreeNodeWidget *>(_o);
+    auto *_t = static_cast<OutlineWidget *>(_o);
     (void)_t;
     (void)_c;
     (void)_id;
     (void)_a;
 }
 
-const QMetaObject *QtTreeNodeWidget::metaObject() const
+const QMetaObject *OutlineWidget::metaObject() const
 {
     return QObject::d_ptr->metaObject ? QObject::d_ptr->dynamicMetaObject() : &staticMetaObject;
 }
 
-void *QtTreeNodeWidget::qt_metacast(const char *_clname)
+void *OutlineWidget::qt_metacast(const char *_clname)
 {
     if (!_clname) return nullptr;
-    if (!strcmp(_clname, qt_meta_stringdata_ZN16QtTreeNodeWidgetE.stringdata0))
+    if (!strcmp(_clname, qt_meta_stringdata_ZN13OutlineWidgetE.stringdata0))
         return static_cast<void*>(this);
     return QWidget::qt_metacast(_clname);
 }
 
-int QtTreeNodeWidget::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
+int OutlineWidget::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
 {
     _id = QWidget::qt_metacall(_c, _id, _a);
     return _id;

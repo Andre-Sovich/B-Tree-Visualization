@@ -13,6 +13,7 @@
 #include <QLabel>
 #include <vector>
 #include <QList>
+#include <QGraphicsDropShadowEffect>
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -40,25 +41,34 @@ public:
     void highlightNodeWithColor(const QList<QPushButton*>& tiles, const QString& color);
     void shiftNode(const QList<QPushButton*>& tiles);
     void outlineNode(const QList<QPushButton*>& tiles);
+    void onMovementTree(QPushButton *currentTile, QPushButton *compareTile, char animationType);
+    void onRemoveTile();
+    void onHighlightTile(QPushButton* highlightTile);
+
+
 
 private slots:
     void on_pushButton_clicked();
 
     void on_createButton_clicked();
-
+protected:
+    void paintEvent(QPaintEvent *event) override;
 private:
     Ui::MainWindow *ui;
     void addTreeNode(QString name);
     QPropertyAnimation *animation;
-    void paintEvent(QPaintEvent *event);
     QTimer *lineAnimationTimer;
     int lineAnimationStep = 0;
     int totalLineSteps = 50;
     QPoint lineParent, lineChild, movingPoint;
+    QPoint nodeBox;
     QLine animatedLine;
     bool drawingLine = false;
     bool outliningNode = false;
     int rectWidth;
     int rectHeight;
+    QList<QPushButton*> outlinedTiles;
+    bool drawOutlineRect = false;
+    QRect outlineRect;
 };
 #endif // MAINWINDOW_H
