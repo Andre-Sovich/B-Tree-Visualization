@@ -32,7 +32,7 @@ public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
-    void onAddTreeTile();//Jmods
+    void onAddTreeTile(std::string& key);//Mmods
     void onCompareTreeNodes();
     void onLeftTreeNode();
     void onRightTreeNode();

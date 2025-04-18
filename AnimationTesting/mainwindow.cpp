@@ -13,7 +13,9 @@ MainWindow::MainWindow(QWidget *parent)
 
     QObject::connect(
         ui->createButton, &QPushButton::clicked,
-        this, &MainWindow::onAddTreeTile);//Jmods
+        this, [this]() {
+        std::string key = "5";
+        onAddTreeTile(key);});//testing key defined -MMods
 
     QObject::connect(
         ui->compareButton, &QPushButton::clicked,
@@ -49,12 +51,12 @@ MainWindow::~MainWindow()
 }
 
 
-void MainWindow::onAddTreeTile(){
+void MainWindow::onAddTreeTile(std::string& key){
 
     QPushButton* newTile = new QPushButton(ui->centralwidget);
     // create new tree node
     newTile->setGeometry(340,110, 0, 0);
-    newTile->setText("Tile");
+    newTile->setText(QString::fromStdString(key));//Mmod
     newTile->setProperty("remove",false);// won't remove tile if false--set to true to remove on click
 
     connect(newTile, &QPushButton::clicked, this, &MainWindow::onRemoveTile);//Mmods
