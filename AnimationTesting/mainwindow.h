@@ -13,6 +13,10 @@
 #include <QLabel>
 #include <vector>
 #include <QList>//Jmods
+#include <QGraphicsDropShadowEffect>
+#include <QHash>
+
+//extern QHash<QString, QPushButton*> tileMap;
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -27,37 +31,46 @@ class MainWindow : public QMainWindow
 public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
+
     void onAddTreeTile();//Jmods
-    void onMovementTree(QPushButton *currentTile, QPushButton *compareTile, char animationType); // added on MovementTree function --Mmods
     void onCompareTreeNodes();
     void onLeftTreeNode();
     void onRightTreeNode();
     void onChildTreeNode();
     void onRemoveWidget();
-    void onRemoveTile();//Mmods
-    void onHighlightTile(QPushButton* highlightTile);//Mmods
     void lineAnimation(QPushButton* parent, QPushButton* child);//Jmods
     void moveLine();
     void highlightNode(const QList<QPushButton*>& tiles);
     void highlightNodeWithColor(const QList<QPushButton*>& tiles, const QString& color);
     void shiftNode(const QList<QPushButton*>& tiles);
+    void outlineNode(const QList<QPushButton*>& tiles);
+    void onMovementTree(QPushButton *currentTile, QPushButton *compareTile, char animationType); // added on MovementTree function --Mmods
+    void onRemoveTile();//Mmods
+    void onHighlightTile(QPushButton* highlightTile);//Mmods
+
 
 private slots:
 
     void on_pushButton_clicked();//Jmods
     void on_createButton_clicked();
-
+protected:
+    void paintEvent(QPaintEvent *event) override;
 private://Jmods
     Ui::MainWindow *ui;
     void addTreeNode(QString name);
     QPropertyAnimation *animation;
-    void paintEvent(QPaintEvent *event);
     QTimer *lineAnimationTimer;
     int lineAnimationStep = 0;
     int totalLineSteps = 50;
     QPoint lineParent, lineChild, movingPoint;
     QLine animatedLine;
     bool drawingLine = false;
+    int rectWidth;
+    int rectHeight;
+    bool drawOutlineRect = false;
+    QRect outlineRect;
+    QHash<QString, QPushButton*> tileMap;
+    int tileCount;
 };
 
 #endif // MAINWINDOW_H
