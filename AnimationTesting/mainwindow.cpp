@@ -25,11 +25,6 @@ MainWindow::MainWindow(QWidget *parent)
     });
 
     QObject::connect(ui->compareButton, &QPushButton::clicked, this, [this]() {
-        // QString ogkey= "tile" + QString::number(this->tileCount);
-        // QString ogref= "tile" + QString::number(this->tileCount++);
-        // if(tileCount>0){
-        //     onCompareTreeNodes(ogkey,ogref);
-        // }
         if (tileKeys.size() >= 2) {
             QString key = tileKeys[tileKeys.size() - 2];
             QString ref = tileKeys[tileKeys.size() - 1];
@@ -42,11 +37,6 @@ MainWindow::MainWindow(QWidget *parent)
         }
     });
     QObject::connect(ui->leftButton, &QPushButton::clicked, this, [this]() {
-        // QString ogkey= "tile" + QString::number(this->tileCount);
-        // QString ogref= "tile" + QString::number(this->tileCount++);
-        // if(tileCount>=1){
-        //     onLeftTreeNode(ogkey, ogref);
-        // }
         if (tileKeys.size() >= 2) {
             QString key = tileKeys[tileKeys.size() - 2];
             QString ref = tileKeys[tileKeys.size() - 1];
@@ -59,9 +49,6 @@ MainWindow::MainWindow(QWidget *parent)
         }
     });
     QObject::connect(ui->rightButton, &QPushButton::clicked, this, [this]() {
-        // QString ogkey= "tile" + QString::number(this->tileCount);
-        // QString ogref= "tile" + QString::number(this->tileCount++);
-        // onRightTreeNode(ogkey, ogref);
         if (tileKeys.size() >= 2) {
             QString key = tileKeys[tileKeys.size() - 2];
             QString ref = tileKeys[tileKeys.size() - 1];
@@ -74,9 +61,6 @@ MainWindow::MainWindow(QWidget *parent)
         }
     });
     QObject::connect(ui->childButton, &QPushButton::clicked, this, [this]() {
-        // QString ogkey= "tile" + QString::number(this->tileCount);
-        // QString ogref= "tile" + QString::number(this->tileCount++);
-        // onChildTreeNode(ogkey, ogref);//Mmods because functions refactored
         if (tileKeys.size() >= 2) {
             QString key = tileKeys[tileKeys.size() - 2];
             QString ref = tileKeys[tileKeys.size() - 1];
@@ -131,7 +115,7 @@ void MainWindow::onAddTreeTile(QString& key){
 }
 
 void MainWindow::onMovementTree(QString& key,QString& ref, char animationType){//Mmods
-    QPushButton* currentTile = tileMap[key];// Changed all std::string to QString to follow hashmap
+    QPushButton* currentTile = tileMap[key];// Changed all std::string to QString to follow hashmap!!
     QPushButton* compareTile = tileMap[ref];
     // find new position
     QRect endPos = compareTile->geometry();

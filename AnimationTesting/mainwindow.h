@@ -33,21 +33,6 @@ public:
     ~MainWindow();
 
     void onAddTreeTile(QString& key);//Mmods start
-    // void onCompareTreeNodes();
-    // void onLeftTreeNode();
-    // void onRightTreeNode();
-    // void onChildTreeNode();
-    // void onRemoveWidget();
-    // void lineAnimation(QPushButton* parent, QPushButton* child);
-    // void moveLine();
-    // void highlightNode(const QList<QPushButton*>& tiles);
-    // void highlightNodeWithColor(const QList<QPushButton*>& tiles, const QString& color);
-    // void shiftNode(const QList<QPushButton*>& tiles);
-    // void outlineNode(const QList<QPushButton*>& tiles);
-    // void onMovementTree(QPushButton *currentTile, QPushButton *compareTile, char animationType);
-    // void onRemoveTile();
-    // void onHighlightTile(QPushButton* highlightTile);
-
     void onCompareTreeNodes(QString& key,QString& ref);
     void onLeftTreeNode(QString& key,QString& ref);
     void onRightTreeNode(QString& key,QString& ref);
