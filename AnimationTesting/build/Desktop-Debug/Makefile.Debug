@@ -1104,7 +1104,8 @@ debug\mainwindow.obj: ..\..\mainwindow.cpp ..\..\mainwindow.h \
 		C:\Qt\6.8.2\msvc2022_64\include\QtWidgets\QWidget \
 		C:\Qt\6.8.2\msvc2022_64\include\QtCore\QTimer \
 		C:\Qt\6.8.2\msvc2022_64\include\QtCore\qtimer.h \
-		C:\Qt\6.8.2\msvc2022_64\include\QtCore\qbasictimer.h
+		C:\Qt\6.8.2\msvc2022_64\include\QtCore\qbasictimer.h \
+		C:\Qt\6.8.2\msvc2022_64\include\QtCore\QDebug
 
 debug\qttreenodewidget.obj: ..\..\qttreenodewidget.cpp ..\..\qttreenodewidget.h \
 		C:\Qt\6.8.2\msvc2022_64\include\QtWidgets\QWidget \
