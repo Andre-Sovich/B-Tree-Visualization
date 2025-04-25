@@ -1,0 +1,17 @@
+# Ignore everything
+*
+
+# Allow source and header files
+!*.h
+!*.hpp
+!*.cpp
+!*.ui
+
+# Allow Qt project files
+!*.pro
+
+# Allow gitignore
+!.gitignore
+
+# Allow traversal into directories
+!*/
