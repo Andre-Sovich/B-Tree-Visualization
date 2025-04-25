@@ -894,7 +894,7 @@ bool MainWindow::compareTiles(std::string curKey, std::string refKey, std::strin
     // update nodes list respectively
 
     // return true if larger
-
+    return true;
 }
 
 /* labeled 'r'

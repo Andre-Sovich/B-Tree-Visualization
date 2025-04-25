@@ -160,6 +160,7 @@ BTreeNode *BTreeNode::getChild(int index)
     if (index <= _children.size() and index >= 0) {
         return _children[index];
     }
+    return NULL;
 }
 /*
 vector<BTreeNode*>* BTreeNode::GetChildren()
@@ -361,7 +362,7 @@ Removes a child from the child vector at a given index
 */
 int BTreeNode::removeChild(int index)
 {
-    _children.erase(_children.begin() + index);
+    _children.erase(_children.begin() + index - 1);
     return 0;
 }
 
