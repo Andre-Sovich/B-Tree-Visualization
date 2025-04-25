@@ -10,5 +10,8 @@
 # Allow Qt project files
 !*.pro
 
+# Allow gitignore
+!.gitignore
+
 # Allow traversal into directories
 !*/
