@@ -8,7 +8,6 @@
 #include <QPropertyAnimation>
 #include <QHash>
 #include <QSequentialAnimationGroup>
-#include <QLayout>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -33,14 +32,13 @@ MainWindow::MainWindow(QWidget *parent)
     // 1 = B Tree, 2 = B+Tree, 3 = B*Tree
     // The default is B Tree
     tree_identifier = 1;
+
 }
-// Public Var
 std::string intStr = "";// temporary string for ints
 std::string keyStr = "";// key string
-std::string indStr = "";// index string
 std::string refStr = "";// reference key
 bool setRef = false; // reference set
-QHash<std::string, QGroupBox *> nodeHash;
+QHash<std::string,QPushButton *> treeHash;
 QSequentialAnimationGroup animSeq;
 
 MainWindow::~MainWindow()
@@ -56,7 +54,6 @@ void MainWindow::on_insert_button_clicked()
         if(tree_identifier == 1){
             //B Tree insert
             b_tree->insert(ui->input_textbox->text().toInt());
-            runAnimationString();
             clearDisplay();
             queue<BTreeNode*> queue = b_tree->treeToQueue();
             displayTreeFromQueue(queue);
@@ -86,6 +83,12 @@ void MainWindow::on_insert_button_clicked()
     else {
         inputErrorMsgBox.setVisible(true);
     }
+}
+
+
+void MainWindow::on_delete_textbox_copyAvailable(bool b)
+{
+
 }
 
 
@@ -239,8 +242,6 @@ void MainWindow::displayTreeFromQueue(queue<BPlusTreeNode*> q) {
             }
         }
 
-        snprintf(output + strlen(output), sizeof(output), "ID:%d", currentNode->getHeight());
-
         QString* text = new QString(output);
         QGraphicsTextItem* text_item = new QGraphicsTextItem(*text);
         text_item->setDefaultTextColor(Qt::black);
@@ -367,8 +368,6 @@ void MainWindow::displayTreeFromQueueFind(queue<BPlusTreeNode*> q, int find_valu
                 snprintf(output + strlen(output), sizeof(output), " | ");
             }
         }
-
-        snprintf(output + strlen(output), sizeof(output), "ID:%d", currentNode->getHeight());
 
         // Creates the visual text item from the text
         QString* text = new QString(output);
@@ -509,8 +508,6 @@ void MainWindow::displayTreeFromQueue(queue<BTreeNode*> q) {
             }
         }
 
-        snprintf(output + strlen(output), sizeof(output), "ID:%s",currentNode->getId().c_str());
-
         // Creates the visual text item from the text
         QString* text = new QString(output);
         QGraphicsTextItem* text_item = new QGraphicsTextItem(*text);
@@ -644,7 +641,6 @@ void MainWindow::displayTreeFromQueueFind(queue<BTreeNode*> q, int find_value) {
                 snprintf(output + strlen(output), sizeof(output), " | ");
             }
         }
-        snprintf(output + strlen(output), sizeof(output), "ID:%s",currentNode->getId().c_str());
 
         // Creates the visual text item from the text
         QString* text = new QString(output);
@@ -808,60 +804,46 @@ void MainWindow::wheelEvent(QWheelEvent * event){
     }
 }
 
-/* labeled 'k'
- * Follows: %d.k
+/* labeled 't'
+ * Follows: %d.%d*t
    Line: "Key %d was created"*/
-void MainWindow::createKey(std::string key){
-    // create new key
-    QLabel * Qkey = new QLabel(ui->centralwidget);
-    Qkey->setGeometry(340,110, 0, 0);
-    Qkey->setText(QString::fromStdString(key));
+void MainWindow::createTile(std::string key, std::string index){
+    // get node to place tile in
+
+    // create new tile
+    QPushButton * tile = new QPushButton(ui->centralwidget);
+    tile->setGeometry(340,110, 0, 0);
+    tile->setText(QString::fromStdString(key));
+
+    // add to someway to keep track of tiles in node
+    treeHash[key] = tile;
+
+    // resize node
 
     // animate tree tile
-    animation = new QPropertyAnimation(Qkey, "geometry");
-    animation->setDuration(250);
-    animation->setStartValue(Qkey->geometry());
-    animation->setEndValue(QRect(10,26,131,36));
-
-    // place key in spawn node
-    ui->spawnNode->layout()->addWidget(Qkey);
-    ui->spawnNode->show();
-    animation->start();
-    Qkey->show();
-    ui->spawnNode->show();
-
-}
-/* labeled 'n'
- * Follows: %d*n
-   Line: "Node %d created as child to node %d"*/
-void MainWindow::createNode(std::string index){
-    // create new node
-    QHBoxLayout *hbox = new QHBoxLayout(ui->centralwidget);
-    QGroupBox * Qnode = new QGroupBox(ui->centralwidget);
-    Qnode->setLayout(hbox);
-    Qnode->setGeometry(QRect(340,110, 50, 50));
-
-    // add to someway to keep track of nodes
-    nodeHash[index] = Qnode;
-
-    // animate tree tile
-    QPropertyAnimation animation = new QPropertyAnimation(Qnode, "geometry");
+    QPropertyAnimation animation = new QPropertyAnimation(tile, "geometry");
     animation.setDuration(250);
-    animation.setStartValue(Qnode->geometry());
-    animation.setEndValue(QRect(340,110,0,0));
+    animation.setStartValue(tile->geometry());
+    animation.setEndValue(QRect(340,110,50,50));
     animation.start();
+    tile->show();
 }
-/* labeled 'm'
- * Follows: %s(1)*%s(2)*m
- * Line "Node %s(1) was moved to be child of %s(2)"
- */
-void MainWindow::makeChild(std::string childIndex, std::string parentIndex){
-    // create line from 1st to 2nd
 
-    // move 2nd down to that tier
 
-    //
+/* labeled 'n'
+ * Follows: n
+   Line: "Node %d created as child to node %d"*/
+void MainWindow::createNode(std::string index, std::string parent){
+    // set parent node
+
+    // create node below parent node
+
+    // create line between child and parent node
+
+    // respace nodes
+
 }
+
 /* labeled 'g'
  * Follows: %d.%d*%d*g
    Line: "Key %d was moved from node %d to %d"*/
@@ -928,6 +910,8 @@ void MainWindow::removeNode(std::string index){
 
     // respace nodes
 }
+
+
 /* labeled 'l'
  * Follows: %d*l
    Line: "Node %d was highlighted"*/
@@ -964,74 +948,6 @@ void MainWindow::resizeNode(std::string index){
  * Follows: a
    Line: "Respaced nodes"*/
 void MainWindow::respaceNodes(){
-    // get root nodes height
-
-    // for each tier of the tree starting at the top
-    // for
-    //
-}
-
-void MainWindow::runAnimationString(){
-    std::string inst = b_tree->getCurrentInstructions();
-    ui->spawnNode->setTitle(QString::fromStdString(inst));
-    for(char& c : inst){
-        callAnimation(c);
-    }
-}
-
-void MainWindow::callAnimation(char c){
-    switch (c) {
-    case 'k': // Add key
-        createKey(keyStr);
-        keyStr = "";
-        refStr = "";
-        indStr = "";
-        break;
-    case 'n': // Compare
-        createNode(indStr);
-        keyStr = "";
-        refStr = "";
-        indStr = "";
-        break;
-    case 'm': // Left
-        makeChild(indStr, refStr);
-        keyStr = "";
-        refStr = "";
-        indStr = "";
-        break;
-    case 'g': // Right
-        gotoNode(keyStr, indStr, refStr);
-        keyStr = "";
-        refStr = "";
-        indStr = "";
-        break;
-    case 'c': // Child
-        compareTiles(keyStr, refStr, indStr);
-        keyStr = "";
-        refStr = "";
-        indStr = "";
-        break;
-    case 'r': // Delete
-        removeTile(keyStr, refStr);
-        keyStr = "";
-        refStr = "";
-        indStr = "";
-        break;
-    case '.': // New int
-        if(keyStr == "") keyStr = intStr;
-        else refStr = intStr;
-        intStr = "";
-        break;
-    case '*': // New int
-        if(indStr == "") indStr = intStr;
-        else refStr = intStr;
-        intStr = "";
-        break;
-    default:
-        // check if its a digit for a key
-        if(isdigit(c)){
-            intStr += c;
-        }
-        break;
-    }
+    // for each tier of the tree, respace it based on the amount of tiles on each
+    // resoace vertically
 }

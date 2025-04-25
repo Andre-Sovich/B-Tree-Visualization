@@ -45,7 +45,7 @@ char* BTree::getCurrentInstructions()
 
 void BTree::clearInsturctions()
 {
-	for (int i = 0; i < (sizeof(instructions) / sizeof(instructions[0])); i++) {
+    for (int i = 0; i < int(sizeof(instructions) / sizeof(instructions[0])); i++) {
 		instructions[i] = '\0';
 	}
 }
@@ -53,88 +53,37 @@ void BTree::clearInsturctions()
 /*
 int BTree::splitRootNode()
 
-splits the root node in the B tree, assigning a new root
-*/
-int BTree::splitRootNode() {
-	snprintf(instructions + strlen(instructions), sizeof(instructions) - sizeof(strlen(instructions)), "----------\n");
-	BTreeNode* newRoot = new BTreeNode(_domain, true, true, _root->getHeight()+1);
-	BTreeNode* rightChild = new BTreeNode(_domain, true, false, _root->getHeight());
-	int key = 0;
-	// if the root node is also a leaf node
-	if (_root->getLeaf()) {
-		snprintf(instructions + strlen(instructions), sizeof(instructions) - sizeof(strlen(instructions)), "The root node, which is also a leaf node is full and needs to be split.\n");
-		snprintf(instructions + strlen(instructions), sizeof(instructions) - sizeof(strlen(instructions)), "A new node is created as a right sibling, and a new node is created to become the new root.\n");
-		while (_root->size() > _middle) {
-			key = _root->getKeyAtIndex(_root->size() - 1);
-			rightChild->insertKey(key);
-			_root->removeKey(key);
-		}
 
-		key = _root->getKeyAtIndex(_root->size() - 1);
-		newRoot->insertKey(key);
-		_root->removeKey(key);
-		// set the parent of the old rood and right child to the new root
-		_root->setParent(newRoot);
-		_root->removeRoot();
-		rightChild->setParent(newRoot);
-		newRoot->addChild(_root, 0);
-		newRoot->addChild(rightChild, 1);
-		_root = newRoot;
-		//_root->findHeight();
-		snprintf(instructions + strlen(instructions), sizeof(instructions) - sizeof(strlen(instructions)), "The old root node becomes the first child of the new root and the new node becomes the second child. \n");
-		return 0;
-	}
-	snprintf(instructions + strlen(instructions), sizeof(instructions) - sizeof(strlen(instructions)), "The root node is full and needs to be split\n");
-	// if the root node is not a leaf node
-	BTreeNode* lastChild = _root->getChild(_root->size());
-	BTreeNode* childToMove = NULL;
-	_root->removeChild(_root->size());
-	int index = 0;
-	snprintf(instructions + strlen(instructions), sizeof(instructions) - sizeof(strlen(instructions)), "Splitting keys between the old root node and the new sibling.\n");
-	while (_root->size() > _middle) {
-		index = _root->size() - 1;
-		key = _root->getKeyAtIndex(index);
-		rightChild->insertKey(key);
-		_root->removeKey(key);
-		childToMove = _root->getChild(index);
-		childToMove->setParent(rightChild);
-		rightChild->addChild(childToMove, rightChild->size() -1);
-		_root->removeChild(index);
-
-	}
-	snprintf(instructions + strlen(instructions), sizeof(instructions) - sizeof(strlen(instructions)), "Now that the keys have been split the children need to be moved between the nodes.\n");
-	key = _root->getKeyAtIndex(_root->size() - 1);
-	rightChild->addChild(lastChild, rightChild->size());
-	lastChild->setParent(rightChild);
-	newRoot->insertKey(key);
-	_root->removeKey(key);
-	_root->setParent(newRoot);
-	_root->removeRoot();
-	rightChild->setParent(newRoot);
-	newRoot->addChild(_root, 0);
-	newRoot->addChild(rightChild, 1);
-	_root = newRoot;
-	_root->findHeight();
-	snprintf(instructions + strlen(instructions), sizeof(instructions) - sizeof(strlen(instructions)), "The old root node becomes the first child of the new root and the new node becomes the second child. \n");
-	return 0;
-}
-/*
 int BTree::splitNode(Node* node)
 
 Splits the given node in the B Tree, pushing the middle key into the parent node.
 Also recursively checks the parent to make sure that it doesn't need to be split.
 */
 int BTree::splitNode(BTreeNode* node) {
-	//static Node node = *nodeptr;
-	//node = *nodeptr;
-	if (node->getRoot()) { return this->splitRootNode(); }
-	snprintf(instructions + strlen(instructions), sizeof(instructions) - sizeof(strlen(instructions)), "----------\n");
-	snprintf(instructions + strlen(instructions), sizeof(instructions) - sizeof(strlen(instructions)), "A node is full and needs to be split. A new sivling is created to the right.\n");
-	BTreeNode* parent = node->getParent();
-	BTreeNode* rightChild = new BTreeNode(_domain, true, false, node->getHeight());
+	// Check if even or odd
+	int midPoint = 0;
+	// If even, get length / 2 - 1
+	if(node->size() % 2 == 0){ midPoint = node->size() / 2 - 1;}
+	// If odd, get length / 2
+	else{ midPoint = node->size() / 2;}
+
+	// Check if node has parent aka is root
+	if(node->getParent() == NULL){
+		// If not, create parent node
+		BTreeNode * newParent = new BTreeNode(_domain,false,true,_root->getHeight()+1);
+		// Set parent node
+		node->setParent(newParent);
+		node->setId(0);
+		// Add Child Node
+		newParent->addChild(node,0);
+		// Update root
+		_root = newParent;
+		//snprintf(instructions + strlen(instructions), sizeof(instructions) - sizeof(strlen(instructions)), "%d.n", newParent->getId());
+		}
+	// get node parent
+	BTreeNode * parent = node->getParent();
+	// get index of current node in parent
 	int index = -1;
-	int key = 0;
-	snprintf(instructions + strlen(instructions), sizeof(instructions) - sizeof(strlen(instructions)), "The keys need to be evenly distrubuted between each of the nodes. \n");
 	for (int i = 0; i < parent->numChildren(); i++)
 	{	
 		if (parent->getChild(i) == node) {
@@ -143,33 +92,47 @@ int BTree::splitNode(BTreeNode* node) {
 		}
 		
 	}
-	parent->addChild(rightChild, index + 1);
-	rightChild->setParent(parent);
-	while (node->size() > _middle) {
-		key = node->getKeyAtIndex(node->size()-1);
+	if (index < 0) { return 1;}
+	// Create new node for all small keys with parent = this nodes parent
+	BTreeNode * newSib = new BTreeNode(_domain,true,false,node->getHeight());
+	parent->addChild(newSib,index + 1);
+	newSib->setId(index + 1);
+	newSib->setParent(parent);
+	// Split children equally
+	// get number of children
+	int numChild = node->numChildren();
+
+	// for each child from middle forward, add to new sibling
+	for(int i = numChild / 2; i < numChild; i ++){
+		BTreeNode * child = node->getChild(i);
+		newSib->addChild(child, i - numChild / 2);
+		child->setId(i - numChild / 2);
+		child->setParent(newSib);
+	}
+	// delete child from original now 
+	for(int i = numChild / 2; i < numChild; i ++){
+		node->removeChild(i);
+	}
+
+	// for each entry middle to end, place into new node
+	int midKey = node->getKeyAtIndex(midPoint);
+	for (int i = midPoint + 1; i < _domain; i ++){
+		int key = node->getKeyAtIndex(i);
+		// add key to new right
+		newSib->insertKey(key);
+		// remove key
 		node->removeKey(key);
-		rightChild->insertKey(key);
-
 	}
-	key = node->getKeyAtIndex(node->size()-1);
-	node->removeKey(key);
-	parent->insertKey(key);
-	rightChild->setParent(parent);
-	if (!node->getLeaf()) {
-		snprintf(instructions + strlen(instructions), sizeof(instructions) - sizeof(strlen(instructions)), "Now that the nodes are split, and keys moved. The children need to be moved between nodes.\n");
+	//add middle to parent
+	parent->insertKey(midKey);
+	// remove middle from node
+	node->removeKey(midKey);
+	// check if parent needs to split
+	if (parent->getFull()){
+		// split parent
+		return this->splitNode(parent);
 	}
-	// this will split the child vectors into the until the nodes have the proper number of children
-	BTreeNode* child;
-	if (node->numChildren() > _middle) {
-		while (node->numChildren() > _middle) {
-			child = node->getChild(_middle);
-			rightChild->addChild(child, rightChild->numChildren());
-			child->setParent(rightChild);
-			node->removeChild(_middle);
-		}
-	}
-
-	if (parent->getFull()) { this->splitNode(parent); }
+	// return 0 if works
 	return 0;
 }
 /*
@@ -179,7 +142,8 @@ Inserts a key into the B tree
 */
 int BTree::insert(int key) {
 	clearInsturctions();
-	snprintf(instructions + strlen(instructions), sizeof(instructions) - sizeof(strlen(instructions)), "inserting the key: %d into the tree. \n", key);
+    //Add insert call to tree
+    snprintf(instructions + strlen(instructions), sizeof(instructions) - sizeof(strlen(instructions)), "%d.k", key);
 	BTreeNode node = *_root;
 	BTreeNode* nodeptr= _root;
 	int index = 0;
@@ -192,15 +156,15 @@ int BTree::insert(int key) {
 				break;
 			}
 		}
-		snprintf(instructions + strlen(instructions), sizeof(instructions) - sizeof(strlen(instructions)), "Moving to child %d.\n", index + 1);
+		snprintf(instructions + strlen(instructions), sizeof(instructions) - sizeof(strlen(instructions)), "%d*l", index);
 		nodeptr = node.getChild(index);
 		node = *node.getChild(index);
 	}
 	BTreeNode& insNode = *nodeptr;
-	snprintf(instructions + strlen(instructions), sizeof(instructions) - sizeof(strlen(instructions)), "Inserting the key: %d into the leaf node. \n", key);
+    //snprintf(instructions + strlen(instructions), sizeof(instructions) - sizeof(strlen(instructions)), "%d.%d*g", key, insNode.getId());
 	insNode.insertKey(key);
 	if (insNode.getFull()) { this->splitNode(nodeptr); }
-	snprintf(instructions + strlen(instructions), sizeof(instructions) - sizeof(strlen(instructions)), "----------\n");
+	//snprintf(instructions + strlen(instructions), sizeof(instructions) - sizeof(strlen(instructions)), "----------\n");
 	return 0;
 }
 
@@ -214,7 +178,6 @@ removes a key from the B tree
 int BTree::remove(int key) {
 	clearInsturctions();
 	
-	snprintf(instructions + strlen(instructions), sizeof(instructions) - sizeof(strlen(instructions)), "Removing the deepest occurance of %d...\n", key);
 	BTreeNode* node = this->findDeepestOccurance(key);
 	if (node == nullptr) {
 		return -1;
@@ -245,6 +208,7 @@ int BTree::remove(int key) {
 		node->removeKey(key);
 		key = node->getChild(index + 1)->getKeyAtIndex(0);
 		node->insertKey(key);
+        snprintf(instructions + strlen(instructions), sizeof(instructions) - sizeof(strlen(instructions)), "Err",key); // insert node
 		if (node->size() < _middle and !node->getLeaf()) {
 			this->mergeNodes(node);
 		}
@@ -266,23 +230,19 @@ int BTree::search(int key)
 {
 	clearInsturctions();
 	snprintf(instructions + strlen(instructions), sizeof(instructions) - sizeof(strlen(instructions)), "----------\n");
-	snprintf(instructions + strlen(instructions), sizeof(instructions) - sizeof(strlen(instructions)), "Finding node that contains/should contain %d...\n", key);
 	BTreeNode* node = _root;
 	BTreeNode* oldNode = node;
 	while (!node->getLeaf()) {
 		for (int i = 0; i < node->size(); i++) {
 			if (node->getKeyAtIndex(i) == key) {
-				snprintf(instructions + strlen(instructions), sizeof(instructions) - sizeof(strlen(instructions)), "The key, %d was found.\n", key);
 				return key;
 			}
 			if (key < node->getKeyAtIndex(i)) {
 				node = node->getChild(i);
-				snprintf(instructions + strlen(instructions), sizeof(instructions) - sizeof(strlen(instructions)), "Moving to node %d.\n", i + 1);
 				break;
 			}
 		}
 		if (node == oldNode) {
-			snprintf(instructions + strlen(instructions), sizeof(instructions) - sizeof(strlen(instructions)), "Moving to node %d.\n", node->size()+1);
 			node = node->getChild(node->size());
 		}
 		oldNode = node;
@@ -291,14 +251,10 @@ int BTree::search(int key)
 	//searches the leaf node for the key
 	for (int i = 0; i < node->size(); i++) {
 		if (node->getKeyAtIndex(i) == key) {
-			snprintf(instructions + strlen(instructions), sizeof(instructions) - sizeof(strlen(instructions)), "The key, %d was found.\n", key);
-			snprintf(instructions + strlen(instructions), sizeof(instructions) - sizeof(strlen(instructions)), "----------\n");
 			return key;
 			break;
 		}
 	}
-	snprintf(instructions + strlen(instructions), sizeof(instructions) - sizeof(strlen(instructions)), "The key, %d was not found.\n", key);
-	snprintf(instructions + strlen(instructions), sizeof(instructions) - sizeof(strlen(instructions)), "----------\n");
 	return -1;
 }
 /*
@@ -316,19 +272,16 @@ BTreeNode* BTree::findDeepestOccurance(int key)
 	while (!node->getLeaf()) {
 		for (int i = 0; i < node->size(); i++) {
 			if (node->getKeyAtIndex(i) == key) {
-				snprintf(instructions + strlen(instructions), sizeof(instructions) - sizeof(strlen(instructions)), "a key has been found in a non leaf node, checking child %d for more keys \n", i + 1);
 				nodes.push_back(node);
 				node = node->getChild(i+1);
 				break;
 			}
 			if (key < node->getKeyAtIndex(i)) {
-				snprintf(instructions + strlen(instructions), sizeof(instructions) - sizeof(strlen(instructions)), "moving to child %d.\n", i + 1);
 				node = node->getChild(i);
 				break;
 			}
 		}
 		if (node == oldNode) {
-			snprintf(instructions + strlen(instructions), sizeof(instructions) - sizeof(strlen(instructions)), "moving to child %d.\n", node->size() + 1);
 			node = node->getChild(node->size());
 		}
 		oldNode = node;
@@ -337,7 +290,6 @@ BTreeNode* BTree::findDeepestOccurance(int key)
 	//searches the leaf node for the key
 	for (int i = 0; i < node->size(); i++) {
 		if (node->getKeyAtIndex(i) == key) {
-			snprintf(instructions + strlen(instructions), sizeof(instructions) - sizeof(strlen(instructions)), "the key: %d was found in a leaf node.\n", key);
 			nodes.push_back(node);
 			break;
 		}
@@ -357,7 +309,6 @@ int BTree::mergeNodes(BTreeNode* node)
 {
 	bool func_called = false;
 	if (node->getRoot() && node->size() == 0 && !node->getLeaf()) {
-		snprintf(instructions + strlen(instructions), sizeof(instructions) - sizeof(strlen(instructions)), "The root node is empty, and the child will become the new root.\n");
 		BTreeNode* temp = node;
 		_root = node->getChild(0);
 		_root->setRoot();
@@ -372,8 +323,6 @@ int BTree::mergeNodes(BTreeNode* node)
 	else if (node->getRoot()) {
 		return 0;
 	}
-	snprintf(instructions + strlen(instructions), sizeof(instructions) - sizeof(strlen(instructions)), "----------\n");
-	snprintf(instructions + strlen(instructions), sizeof(instructions) - sizeof(strlen(instructions)), "A internal node is under half size and needs to be merged with it's sibling.\n");
 	// find the index of the child from the parent node
 	BTreeNode* parent = node->getParent();
 	int child_ndx = -1;
@@ -392,11 +341,11 @@ int BTree::mergeNodes(BTreeNode* node)
 	if (child_ndx == 0 && parent->numChildren() > 1)
 	{
 		// this section will handle if the node being merged is the leftmost child
-		snprintf(instructions + strlen(instructions), sizeof(instructions) - sizeof(strlen(instructions)), "the node being merged is child 1 into child 2.\n");
 		right_Sibiling = parent->getChild(1);
 		int key = parent->getKeyAtIndex(child_ndx);
 		parent->removeKey(key);
 		right_Sibiling->insertKey(key);
+        //snprintf(instructions + strlen(instructions), sizeof(instructions) - sizeof(strlen(instructions)), "%d.%d*g",key, right_Sibiling->getId()); // move node
 		while (node->size() > 0) {
 			int index = node->size() - 1;
 			key = node->getKeyAtIndex(index);
@@ -404,20 +353,25 @@ int BTree::mergeNodes(BTreeNode* node)
 			child_Moving->setParent(right_Sibiling);
 			node->removeKey(key);
 			node->removeChild(index + 1);
+			snprintf(instructions + strlen(instructions), sizeof(instructions) - sizeof(strlen(instructions)), "%d*d",index + 2); // delete node
 			right_Sibiling->insertKey(key);
+            //snprintf(instructions + strlen(instructions), sizeof(instructions) - sizeof(strlen(instructions)), "%d.%d*g",key, right_Sibiling->getId()); // move node
 			right_Sibiling->addChild(child_Moving, 0);
+			snprintf(instructions + strlen(instructions), sizeof(instructions) - sizeof(strlen(instructions)), "n"); // add child node
 		}
 		child_Moving = node->getChild(0);
 		child_Moving->setParent(right_Sibiling);
 		node->removeChild(0);
+		snprintf(instructions + strlen(instructions), sizeof(instructions) - sizeof(strlen(instructions)), "%d*d",1); // delete node
 		right_Sibiling->addChild(child_Moving,0);
+		snprintf(instructions + strlen(instructions), sizeof(instructions) - sizeof(strlen(instructions)), "n"); // add child node
 		parent->removeChild(child_ndx);
+		snprintf(instructions + strlen(instructions), sizeof(instructions) - sizeof(strlen(instructions)), "%d*d",child_ndx + 1); // delete node
 		if (right_Sibiling->getFull()) { this->splitNode(right_Sibiling); func_called = true; }
 		if (parent->size() < _middle) { this->mergeNodes(parent); func_called = true; }
 	}
 	else if (child_ndx == parent->numChildren() - 1) {
 		// this section will handle if the leaf node being merged is the right most child
-		snprintf(instructions + strlen(instructions), sizeof(instructions) - sizeof(strlen(instructions)), "The node being merged is child %d into child %d\n", child_ndx + 1, child_ndx);
 		left_Sibiling = parent->getChild(child_ndx - 1);
 		int key = parent->getKeyAtIndex(child_ndx - 1);
 		parent->removeKey(key);
@@ -428,14 +382,19 @@ int BTree::mergeNodes(BTreeNode* node)
 			child_Moving->setParent(left_Sibiling);
 			node->removeKey(key);
 			node->removeChild(0);
+			snprintf(instructions + strlen(instructions), sizeof(instructions) - sizeof(strlen(instructions)), "%d*d",1); // delete node
 			left_Sibiling->insertKey(key);
 			left_Sibiling->addChild(child_Moving, left_Sibiling->size());
+			snprintf(instructions + strlen(instructions), sizeof(instructions) - sizeof(strlen(instructions)), "n"); // add child node
 		}
 		child_Moving = node->getChild(0);
 		child_Moving->setParent(left_Sibiling);
 		node->removeChild(0);
+		snprintf(instructions + strlen(instructions), sizeof(instructions) - sizeof(strlen(instructions)), "%d*d",1); // delete node
 		left_Sibiling->addChild(child_Moving, left_Sibiling->size());
+		snprintf(instructions + strlen(instructions), sizeof(instructions) - sizeof(strlen(instructions)), "n"); // add child node
 		parent->removeChild(child_ndx);
+		snprintf(instructions + strlen(instructions), sizeof(instructions) - sizeof(strlen(instructions)), "%d*d",child_ndx+1); // delete node
 		if (left_Sibiling->getFull()) { this->splitNode(left_Sibiling); func_called = true; }
 		if (parent->size() < _middle) { this->mergeNodes(parent); func_called = true; }
 	}
@@ -444,7 +403,6 @@ int BTree::mergeNodes(BTreeNode* node)
 		right_Sibiling = parent->getChild(child_ndx + 1);
 		if (left_Sibiling->size() > right_Sibiling->size()) {
 			// merge to the right
-			snprintf(instructions + strlen(instructions), sizeof(instructions) - sizeof(strlen(instructions)), "The node being merged is child %d into child %d\n", child_ndx + 1, child_ndx+2);
 			int key = parent->getKeyAtIndex(child_ndx);
 			parent->removeKey(key);
 			right_Sibiling->insertKey(key);
@@ -455,20 +413,24 @@ int BTree::mergeNodes(BTreeNode* node)
 				child_Moving->setParent(right_Sibiling);
 				node->removeKey(key);
 				node->removeChild(index + 1);
+				snprintf(instructions + strlen(instructions), sizeof(instructions) - sizeof(strlen(instructions)), "%d*d",index + 2); // delete node
 				right_Sibiling->insertKey(key);
 				right_Sibiling->addChild(child_Moving, 0);
+				snprintf(instructions + strlen(instructions), sizeof(instructions) - sizeof(strlen(instructions)), "n"); // add child node
 			}
 			child_Moving = node->getChild(0);
 			child_Moving->setParent(right_Sibiling);
 			node->removeChild(0);
+			snprintf(instructions + strlen(instructions), sizeof(instructions) - sizeof(strlen(instructions)), "%d*d",1); // delete node
 			right_Sibiling->addChild(child_Moving, 0);
+			snprintf(instructions + strlen(instructions), sizeof(instructions) - sizeof(strlen(instructions)), "n"); // add child node
 			parent->removeChild(child_ndx);
+			snprintf(instructions + strlen(instructions), sizeof(instructions) - sizeof(strlen(instructions)), "%d*d",child_ndx + 1); // delete node
 			if (right_Sibiling->getFull()) { this->splitNode(right_Sibiling); func_called = true; }
 			if (parent->size() < _middle) { this->mergeNodes(parent); func_called = true; }
 		}
 		else {
 			// merge to the left
-			snprintf(instructions + strlen(instructions), sizeof(instructions) - sizeof(strlen(instructions)), "The node being merged is child %d into child %d\n", child_ndx + 1, child_ndx);
 			int key = parent->getKeyAtIndex(child_ndx - 1);
 			parent->removeKey(key);
 			left_Sibiling->insertKey(key);
@@ -478,14 +440,19 @@ int BTree::mergeNodes(BTreeNode* node)
 				child_Moving->setParent(left_Sibiling);
 				node->removeKey(key);
 				node->removeChild(0);
+				snprintf(instructions + strlen(instructions), sizeof(instructions) - sizeof(strlen(instructions)), "%d*d",1); // delete node
 				left_Sibiling->insertKey(key);
 				left_Sibiling->addChild(child_Moving, left_Sibiling->size());
+				snprintf(instructions + strlen(instructions), sizeof(instructions) - sizeof(strlen(instructions)), "n"); // add child node
 			}
 			child_Moving = node->getChild(0);
 			child_Moving->setParent(left_Sibiling);
 			node->removeChild(0);
+			snprintf(instructions + strlen(instructions), sizeof(instructions) - sizeof(strlen(instructions)), "%d*d",1); // delete node
 			left_Sibiling->addChild(child_Moving, 0);
+			snprintf(instructions + strlen(instructions), sizeof(instructions) - sizeof(strlen(instructions)), "n"); // add child node
 			parent->removeChild(child_ndx);
+			snprintf(instructions + strlen(instructions), sizeof(instructions) - sizeof(strlen(instructions)), "%d*d",child_ndx + 1); // delete node
 			if (left_Sibiling->getFull()) { this->splitNode(left_Sibiling); func_called = true; }
 			if (parent->size() < _middle) { this->mergeNodes(parent); func_called = true; }
 		}
@@ -507,8 +474,6 @@ int BTree::mergeNodes(BTreeNode* node)
 */
 int BTree::mergeLeafNodes(BTreeNode* node)
 {
-	snprintf(instructions + strlen(instructions), sizeof(instructions) - sizeof(strlen(instructions)), "----------\n");
-	snprintf(instructions + strlen(instructions), sizeof(instructions) - sizeof(strlen(instructions)), "A leaf node is under half size and needs to be merged with it's sibling\n");
 	if (!node->getLeaf()) { return -1; }
 	BTreeNode* parent = node->getParent();
 	int child_ndx = -1;
@@ -535,6 +500,7 @@ int BTree::mergeLeafNodes(BTreeNode* node)
 			right_Sibiling->insertKey(key);
 		}
 		parent->removeChild(child_ndx);
+		snprintf(instructions + strlen(instructions), sizeof(instructions) - sizeof(strlen(instructions)), "%d*d",child_ndx + 1); // delete node
 		if (right_Sibiling->getFull()) { this->splitNode(right_Sibiling); }
 		if (parent->size() < _middle) { this->mergeNodes(parent); }
 	}
@@ -550,6 +516,7 @@ int BTree::mergeLeafNodes(BTreeNode* node)
 			left_Sibiling->insertKey(key);
 		}
 		parent->removeChild(child_ndx);
+		snprintf(instructions + strlen(instructions), sizeof(instructions) - sizeof(strlen(instructions)), "%d*d",child_ndx + 1); // delete node
 		if (left_Sibiling->getFull()) { this->splitNode(left_Sibiling); }
 		if (parent->size() < _middle) { this->mergeNodes(parent); }
 	}
@@ -568,6 +535,7 @@ int BTree::mergeLeafNodes(BTreeNode* node)
 				right_Sibiling->insertKey(key);
 			}
 			parent->removeChild(child_ndx);
+			snprintf(instructions + strlen(instructions), sizeof(instructions) - sizeof(strlen(instructions)), "%d*d",child_ndx + 1); // delete node
 			if (right_Sibiling->getFull()) { this->splitNode(right_Sibiling); }
 			if (parent->size() < _middle) { this->mergeNodes(parent); }
 		}
@@ -582,6 +550,7 @@ int BTree::mergeLeafNodes(BTreeNode* node)
 				left_Sibiling->insertKey(key);
 			}
 			parent->removeChild(child_ndx);
+			snprintf(instructions + strlen(instructions), sizeof(instructions) - sizeof(strlen(instructions)), "%d*d",child_ndx + 1); // delete node
 			if (left_Sibiling->getFull()) { this->splitNode(left_Sibiling); }
 			if (parent->size() < _middle) { this->mergeNodes(parent); }
 		}

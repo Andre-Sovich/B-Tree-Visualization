@@ -1,5 +1,5 @@
-#ifndef MAINWINDOW_H
-#define MAINWINDOW_H
+#ifndef TESTWINDOW_H
+#define TESTWINDOW_H
 
 #include <QMainWindow>
 #include <QGraphicsScene>
@@ -12,7 +12,6 @@
 #include <BPlusTree.hh>
 #include <BStarTree.hh>
 #include <BTree.h>
-#include <QPropertyAnimation>
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -38,34 +37,10 @@ public:
     BPlusTree* bplus_tree;
     BStarTree* bstar_tree;
 
-    void createKey(std::string key);
-
-    void createNode(std::string index);
-
-    void makeChild(std::string childIndex, std::string parentIndex);
-
-    void gotoNode(std::string key, std::string curIndex, std::string newIndex);
-
-    bool compareTiles(std::string curKey, std::string refKey, std::string index);
-
-    void removeTile(std::string key, std::string index);
-
-    void removeNode(std::string index);
-
-    void highlightNode(std::string index);
-
-    void highlightTile(std::string key, std::string index);
-
-    void resizeNode(std::string index);
-
-    void respaceNodes();
-
-    void runAnimationString();
-
-    void callAnimation(char c);
-
 private slots:
     void on_insert_button_clicked();
+
+    void on_delete_textbox_copyAvailable(bool b);
 
     void on_btree_radio_button_clicked();
 
@@ -86,20 +61,39 @@ private slots:
     bool isNumber(std::string string);
 
     void displayTreeFromQueue(queue<BPlusTreeNode*> q);
-    void displayTreeFromQueueFind(queue<BTreeNode*> q, int find_value);
+
     void displayTreeFromQueueFind(queue<BPlusTreeNode*> q, int find_value);
 
     void displayTreeFromQueue(queue<BTreeNode*> q);
+
+    void displayTreeFromQueueFind(queue<BTreeNode*> q, int find_value);
 
     void on_find_button_clicked();
 
     void wheelEvent(QWheelEvent *event);
 
+    void createTile(std::string key, std::string index);
 
+    void createNode(std::string key, std::string index);
+
+    void gotoNode(std::string key, std::string curIndex, std::string newIndex);
+
+    bool compareTiles(std::string curKey, std::string refKey, std::string index);
+
+    void removeTile(std::string key, std::string index);
+
+    void removeNode(std::string index);
+
+    void highlightNode(std::string index);
+
+    void highlightTile(std::string key, std::string index);
+
+    void resizeNode(std::string index);
+
+    void respaceNodes();
 
 
 private:
     Ui::MainWindow *ui;
-    QPropertyAnimation *animation;
 };
-#endif // MAINWINDOW_H
+#endif // TESTWINDOW_H

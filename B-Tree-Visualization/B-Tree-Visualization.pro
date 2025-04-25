@@ -14,6 +14,7 @@ SOURCES += \
     BStarTree.cpp \
     BTree.cpp \
     BTreeNode.cpp \
+    BTreeWidget.cpp \
     main.cpp \
     mainwindow.cpp
 
@@ -23,6 +24,7 @@ HEADERS += \
     BStarTree.hh \
     BTree.h \
     BTreeNode.h \
+    BTreeWidget.h \
     mainwindow.h \
 
 FORMS += \

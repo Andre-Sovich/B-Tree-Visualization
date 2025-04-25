@@ -11,7 +11,8 @@
 #include <QMessageBox>
 #include <QWheelEvent>
 #include <QLabel>
-#include <vector>
+#include <QTimer>
+#include <QSequentialAnimationGroup>
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -26,18 +27,18 @@ class MainWindow : public QMainWindow
 public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
+    void onAddTreeNode(std::string key);
+    void onCompareTreeNodes(std::string key,std::string refKey);
+    void onLeftTreeNode(std::string key,std::string refKey);
+    void onRightTreeNode(std::string key,std::string refKey);
+    void onChildTreeNode(std::string key,std::string refKey);
+    void onRemoveWidget(std::string key,std::string refKey);
+    void callAnimation(char c);
+    void runAnimationString();
 
-    void onAddTreeNode();
-    void onCompareTreeNodes();
-    void onLeftTreeNode();
-    void onRightTreeNode();
-    void onChildTreeNode();
-    void onRemoveWidget();
+
 
 private slots:
-    void on_pushButton_clicked();
-
-    void on_createButton_clicked();
 
 private:
     Ui::MainWindow *ui;

@@ -73,9 +73,9 @@
     <property name="geometry">
      <rect>
       <x>707</x>
-      <y>118</y>
+      <y>88</y>
       <width>200</width>
-      <height>442</height>
+      <height>472</height>
      </rect>
     </property>
     <property name="sizePolicy">
@@ -306,140 +306,6 @@
     </property>
     <property name="textInteractionFlags">
      <set>Qt::TextInteractionFlag::NoTextInteraction</set>
-    </property>
-   </widget>
-   <widget class="QGraphicsView" name="graphicsView">
-    <property name="geometry">
-     <rect>
-      <x>9</x>
-      <y>118</y>
-      <width>256</width>
-      <height>192</height>
-     </rect>
-    </property>
-    <property name="sizePolicy">
-     <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
-      <horstretch>0</horstretch>
-      <verstretch>0</verstretch>
-     </sizepolicy>
-    </property>
-    <property name="palette">
-     <palette>
-      <active>
-       <colorrole role="Base">
-        <brush brushstyle="SolidPattern">
-         <color alpha="255">
-          <red>130</red>
-          <green>130</green>
-          <blue>130</blue>
-         </color>
-        </brush>
-       </colorrole>
-       <colorrole role="Window">
-        <brush brushstyle="SolidPattern">
-         <color alpha="255">
-          <red>130</red>
-          <green>130</green>
-          <blue>130</blue>
-         </color>
-        </brush>
-       </colorrole>
-       <colorrole role="AlternateBase">
-        <brush brushstyle="SolidPattern">
-         <color alpha="255">
-          <red>130</red>
-          <green>130</green>
-          <blue>130</blue>
-         </color>
-        </brush>
-       </colorrole>
-      </active>
-      <inactive>
-       <colorrole role="Base">
-        <brush brushstyle="SolidPattern">
-         <color alpha="255">
-          <red>130</red>
-          <green>130</green>
-          <blue>130</blue>
-         </color>
-        </brush>
-       </colorrole>
-       <colorrole role="Window">
-        <brush brushstyle="SolidPattern">
-         <color alpha="255">
-          <red>130</red>
-          <green>130</green>
-          <blue>130</blue>
-         </color>
-        </brush>
-       </colorrole>
-       <colorrole role="AlternateBase">
-        <brush brushstyle="SolidPattern">
-         <color alpha="255">
-          <red>130</red>
-          <green>130</green>
-          <blue>130</blue>
-         </color>
-        </brush>
-       </colorrole>
-      </inactive>
-      <disabled>
-       <colorrole role="Base">
-        <brush brushstyle="SolidPattern">
-         <color alpha="255">
-          <red>130</red>
-          <green>130</green>
-          <blue>130</blue>
-         </color>
-        </brush>
-       </colorrole>
-       <colorrole role="Window">
-        <brush brushstyle="SolidPattern">
-         <color alpha="255">
-          <red>130</red>
-          <green>130</green>
-          <blue>130</blue>
-         </color>
-        </brush>
-       </colorrole>
-       <colorrole role="AlternateBase">
-        <brush brushstyle="SolidPattern">
-         <color alpha="255">
-          <red>130</red>
-          <green>130</green>
-          <blue>130</blue>
-         </color>
-        </brush>
-       </colorrole>
-      </disabled>
-     </palette>
-    </property>
-    <property name="cursor" stdset="0">
-     <cursorShape>ArrowCursor</cursorShape>
-    </property>
-    <property name="mouseTracking">
-     <bool>true</bool>
-    </property>
-    <property name="tabletTracking">
-     <bool>true</bool>
-    </property>
-    <property name="verticalScrollBarPolicy">
-     <enum>Qt::ScrollBarPolicy::ScrollBarAlwaysOff</enum>
-    </property>
-    <property name="horizontalScrollBarPolicy">
-     <enum>Qt::ScrollBarPolicy::ScrollBarAlwaysOff</enum>
-    </property>
-    <property name="dragMode">
-     <enum>QGraphicsView::DragMode::ScrollHandDrag</enum>
-    </property>
-    <property name="transformationAnchor">
-     <enum>QGraphicsView::ViewportAnchor::AnchorUnderMouse</enum>
-    </property>
-    <property name="resizeAnchor">
-     <enum>QGraphicsView::ViewportAnchor::AnchorUnderMouse</enum>
-    </property>
-    <property name="viewportUpdateMode">
-     <enum>QGraphicsView::ViewportUpdateMode::MinimalViewportUpdate</enum>
     </property>
    </widget>
    <widget class="QPushButton" name="step_back_button">
@@ -1626,28 +1492,7 @@
      <set>Qt::AlignmentFlag::AlignCenter</set>
     </property>
    </widget>
-   <widget class="QPushButton" name="pushButton">
-    <property name="geometry">
-     <rect>
-      <x>148</x>
-      <y>88</y>
-      <width>75</width>
-      <height>24</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>PushButton</string>
-    </property>
-   </widget>
-   <widget class="QWidget" name="layoutWidget">
-    <property name="geometry">
-     <rect>
-      <x>0</x>
-      <y>0</y>
-      <width>185</width>
-      <height>22</height>
-     </rect>
-    </property>
+   <widget class="QWidget" name="">
     <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
       <widget class="QRadioButton" name="btree_radio_button">
@@ -1920,20 +1765,6 @@
       </widget>
      </item>
     </layout>
-   </widget>
-   <widget class="QGroupBox" name="spawnNode">
-    <property name="geometry">
-     <rect>
-      <x>390</x>
-      <y>130</y>
-      <width>151</width>
-      <height>71</height>
-     </rect>
-    </property>
-    <property name="title">
-     <string>Spawn Node</string>
-    </property>
-    <layout class="QHBoxLayout" name="horizontalLayout_2"/>
    </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">

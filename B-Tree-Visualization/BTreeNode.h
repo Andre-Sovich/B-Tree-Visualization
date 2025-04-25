@@ -1,56 +1,67 @@
-#pragma once
-#ifndef Node_H
-#define Node_H
+#ifndef BTREENODE_H
+#define BTREENODE_H
+
 #include <vector>
 #include <string>
 using namespace std;
+
+
 class BTreeNode {
-private:
-	long long _id;
-	int _domain;
-	bool _leaf;
-	bool _root;
-	bool _full;
-	vector<int> _keys;
-	vector<BTreeNode*> _children;
-	BTreeNode* _parent;
-	int _height;
-public:
-	BTreeNode();
-	BTreeNode(int domain, bool leaf, bool root, int height);
-	int getDomain();
-	bool getLeaf();
-	int setLeaf();
-	int removeLeaf();
-	bool getRoot();
-	int setRoot();
-	int removeRoot();
-	bool getFull();
-	int insertKey(int key);
-	int removeKey(int key);
-	vector<int> getKeys();
-	int getKeyAtIndex(int index);
-	int size();
-	int setParent(BTreeNode* parent);
-	int removeParent();
-	BTreeNode* getParent();
-	int addChild(BTreeNode* child, int index);
-	int removeChild(int index);
-	BTreeNode* getChild(int index);
-    vector<BTreeNode*>* getChildren();
-	int numChildren();
-	int getId();
-	void printKeys();
-	~BTreeNode();
-	int getHeight();
-	int setHeight(int height);
-	int findHeight();
-	string toString();
+    private:
+    int _domain;
+    bool _leaf;
+    bool _root;
+    bool _full;
+    BTreeNode* _parent;
+    vector<BTreeNode*> _children;
+    vector<int> _keys;
+    int _id;
+    int _height;
+
+    public:
+    // Constructors
+    BTreeNode();
+    BTreeNode(int domain, bool leaf, bool root, int height);
+
+
+    // Getters
+    int getDomain();
+    bool getLeaf();
+    bool getRoot();
+    bool getFull();
+    int size();
+    vector<int> getKeys();
+    int getKeyAtIndex(int index);
+    BTreeNode *getParent();
+    BTreeNode *getChild(int index);
+    vector<BTreeNode *> *getChildren();
+    int numChildren();
+    std::string getId();
+    int getHeight();
+
+
+    // Setters
+    int setId(int i);
+    int setLeaf();
+    int setRoot();
+    int insertKey(int key);
+    int setParent(BTreeNode *parent);
+    int addChild(BTreeNode *child, int index);
+    int setHeight(int height);
+
+    // Removers
+    int removeRoot();
+    int removeKey(int key);
+    int removeLeaf();
+    int removeParent();
+    int removeChild(int index);
+
+    // Info
+    void printKeys();
+    int findHeight();
+    string toString();
+    bool operator==(const BTreeNode &other);
     bool keyExists(int key);
-	bool operator==(const BTreeNode& other);
-
-
 };
-#endif // !Node
 
-
+#endif
