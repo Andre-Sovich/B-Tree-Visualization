@@ -851,6 +851,10 @@ void MainWindow::createNode(std::string index){
     animation.setEndValue(QRect(340,110,5,50));
     animation.start();
     Qnode->show();
+
+    Qnode->setTitle("itSpawnedMe");
+    nodeMap.find(index).value()->title();
+    ui->spawnNode->setTitle(nodeMap.find(index).value()->title());
 }
 /* labeled 'm'
  * Follows: %s(1)*%s(2)*m
@@ -876,14 +880,14 @@ void MainWindow::gotoNode(std::string curIndex, std::string newIndex, std::strin
         curNode = ui->spawnNode;
     }
     else{
-        curNode = * nodeMap.find(curIndex);
+        curNode = nodeMap.find(curIndex).value();
     }
 
     // get key
     QList<QLabel *> keys = curNode->findChildren<QLabel *>();
     QLabel * keyRef = NULL;
-    for (QList<QLabel *>::Iterator it = keys.begin(); it != keys.end(); ++it){
-        QLabel* currentLabel = *it;
+    for (auto it : keys){
+        QLabel* currentLabel = it;
         if (currentLabel->text() == QString::fromStdString(key)){
             keyRef = currentLabel;
             break;
@@ -892,7 +896,7 @@ void MainWindow::gotoNode(std::string curIndex, std::string newIndex, std::strin
     if(keyRef == NULL) return;
 
     // get node to place tile in
-    QGroupBox * newNode = * nodeMap.find(curIndex);
+    QGroupBox * newNode = nodeMap.find(curIndex).value();
 
     // move tile to node location
 
@@ -1079,7 +1083,6 @@ void MainWindow::callAnimation(char c){
     switch (c) {
     case 'k': // Add key
         createKey(keyStr);
-        ui->spawnNode->setTitle(QString::fromStdString("key created"));
         keyStr = "";
         refStr = "";
         indStr = "";
@@ -1097,7 +1100,6 @@ void MainWindow::callAnimation(char c){
         indStr = "";
         break;
     case 'g': // Move to Node
-        break;
         gotoNode(keyStr, indStr, refStr);
         keyStr = "";
         refStr = "";

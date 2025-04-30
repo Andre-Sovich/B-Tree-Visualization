@@ -48,7 +48,6 @@ public:
     QSlider *animation_speed_slider;
     QLineEdit *input_textbox;
     QLabel *Qlabel_at_top;
-    QPushButton *pushButton;
     QWidget *layoutWidget;
     QHBoxLayout *horizontalLayout;
     QRadioButton *btree_radio_button;
@@ -350,12 +349,9 @@ public:
         Qlabel_at_top->setTextFormat(Qt::TextFormat::PlainText);
         Qlabel_at_top->setScaledContents(true);
         Qlabel_at_top->setAlignment(Qt::AlignmentFlag::AlignCenter);
-        pushButton = new QPushButton(centralwidget);
-        pushButton->setObjectName("pushButton");
-        pushButton->setGeometry(QRect(148, 88, 75, 24));
         layoutWidget = new QWidget(centralwidget);
         layoutWidget->setObjectName("layoutWidget");
-        layoutWidget->setGeometry(QRect(0, 0, 185, 22));
+        layoutWidget->setGeometry(QRect(0, 0, 189, 22));
         horizontalLayout = new QHBoxLayout(layoutWidget);
         horizontalLayout->setObjectName("horizontalLayout");
         horizontalLayout->setContentsMargins(0, 0, 0, 0);
@@ -415,7 +411,7 @@ public:
 
         spawnNode = new QGroupBox(centralwidget);
         spawnNode->setObjectName("spawnNode");
-        spawnNode->setGeometry(QRect(390, 130, 151, 71));
+        spawnNode->setGeometry(QRect(30, 470, 121, 71));
         horizontalLayout_2 = new QHBoxLayout(spawnNode);
         horizontalLayout_2->setObjectName("horizontalLayout_2");
         MainWindow->setCentralWidget(centralwidget);
@@ -454,7 +450,6 @@ public:
         animation_speed_slider->setToolTip(QCoreApplication::translate("MainWindow", "Animation Speed", nullptr));
 #endif // QT_CONFIG(tooltip)
         Qlabel_at_top->setText(QCoreApplication::translate("MainWindow", " B Trees", nullptr));
-        pushButton->setText(QCoreApplication::translate("MainWindow", "PushButton", nullptr));
         btree_radio_button->setText(QCoreApplication::translate("MainWindow", "B-Tree", nullptr));
         bplus_radio_button->setText(QCoreApplication::translate("MainWindow", "B+Tree", nullptr));
         bstar_radio_button->setText(QCoreApplication::translate("MainWindow", "B*Tree", nullptr));
