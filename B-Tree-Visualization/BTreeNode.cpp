@@ -190,7 +190,7 @@ std::string BTreeNode::getId()
     if (_parent == NULL) {
         return std::to_string(_id);
     } else
-        return _parent->getId() + std::to_string(_id);
+        return _parent->getId() + "/" + std::to_string(_id);
 }
 /*
 int BTreeNode::setId(int i)
@@ -246,17 +246,17 @@ inserts the given key into the correct spot of the vector, sorted by value
 int BTreeNode::insertKey(int key)
 {
     //if (_keys.size() >= _domain) { return 1; } // the node is already full
-    for (int i = 0; i < _keys.size(); i++) {
+    for (int i = 0; i < int(_keys.size()); i++) {
         if (key <= _keys[i]) {
             _keys.insert(_keys.begin() + i, key);
-            if (_keys.size() >= _domain) {
+            if (int(_keys.size()) >= _domain) {
                 _full = true;
             }
             return 0;
         }
     }
     _keys.push_back(key);
-    if (_keys.size() >= _domain) {
+    if (int(_keys.size()) >= _domain) {
         _full = true;
     }
     return 0;
@@ -282,7 +282,7 @@ int BTreeNode::addChild(BTreeNode *child, int index)
     if (index < 0) {
         return 1;
     }
-    if (index > _children.size()) {
+    if (index > int(_children.size())) {
         _children.push_back(child);
         _leaf = false;
         return 0;
@@ -362,7 +362,7 @@ Removes a child from the child vector at a given index
 */
 int BTreeNode::removeChild(int index)
 {
-    _children.erase(_children.begin() + index - 1);
+    _children.erase(_children.begin() + index);
     return 0;
 }
 

@@ -63,14 +63,14 @@ int BTree::splitNode(BTreeNode* node) {
 	// Check if even or odd
 	int midPoint = 0;
 	// If even, get length / 2 - 1
-	if(node->size() % 2 == 0){ midPoint = node->size() / 2 - 1;}
+    if(node->size() % 2 == 0){ midPoint = node->size() / 2 - 1;}
 	// If odd, get length / 2
 	else{ midPoint = node->size() / 2;}
 
 	// Check if node has parent aka is root
-	if(node->getParent() == NULL){
+    if(node->getParent() == NULL){
 		// If not, create parent node
-		BTreeNode * newParent = new BTreeNode(_domain,false,true,_root->getHeight()+1);
+        BTreeNode * newParent = new BTreeNode(_domain,false,true,_root->getHeight()+1);
 		// Set parent node
 		node->setParent(newParent);
 		node->setId(0);
@@ -78,7 +78,6 @@ int BTree::splitNode(BTreeNode* node) {
 		newParent->addChild(node,0);
 		// Update root
 		_root = newParent;
-		//snprintf(instructions + strlen(instructions), sizeof(instructions) - sizeof(strlen(instructions)), "%d.n", newParent->getId());
 		}
 	// get node parent
 	BTreeNode * parent = node->getParent();
@@ -89,47 +88,54 @@ int BTree::splitNode(BTreeNode* node) {
 		if (parent->getChild(i) == node) {
 			index = i;
 			break;
-		}
-		
-	}
+		}		
+    }
+
 	if (index < 0) { return 1;}
-	// Create new node for all small keys with parent = this nodes parent
+
+    // Create new node to the right for all small keys with parent = this nodes parent
 	BTreeNode * newSib = new BTreeNode(_domain,true,false,node->getHeight());
 	parent->addChild(newSib,index + 1);
 	newSib->setId(index + 1);
 	newSib->setParent(parent);
+
 	// Split children equally
 	// get number of children
 	int numChild = node->numChildren();
-
 	// for each child from middle forward, add to new sibling
-	for(int i = numChild / 2; i < numChild; i ++){
-		BTreeNode * child = node->getChild(i);
-		newSib->addChild(child, i - numChild / 2);
-		child->setId(i - numChild / 2);
-		child->setParent(newSib);
-	}
-	// delete child from original now 
-	for(int i = numChild / 2; i < numChild; i ++){
-		node->removeChild(i);
-	}
-
+    if (numChild != 0){
+        while(node->numChildren() > numChild / 2){
+            int i = node->numChildren() - 1; // end of index
+            BTreeNode * child = node->getChild(i);
+            newSib->addChild(child, i - (numChild / 2));
+            child->setId(i - (numChild / 2));
+            child->setParent(newSib);
+            node->removeChild(i);
+        }
+    }
 	// for each entry middle to end, place into new node
 	int midKey = node->getKeyAtIndex(midPoint);
-	for (int i = midPoint + 1; i < _domain; i ++){
-		int key = node->getKeyAtIndex(i);
+    while (int(node->getKeys().size()) > midPoint + 1){
+        int i = node->getKeys().size() - 1;
+        int key = node->getKeyAtIndex(i);
 		// add key to new right
 		newSib->insertKey(key);
-		// remove key
-		node->removeKey(key);
+        node->removeKey(key);
+        snprintf(instructions + strlen(instructions), sizeof(instructions) - sizeof(strlen(instructions)),
+                 "%s*%s*%d.g", node->getId().c_str(), newSib->getId().c_str(), key); // move key from node to node
 	}
 	//add middle to parent
 	parent->insertKey(midKey);
 	// remove middle from node
 	node->removeKey(midKey);
+    snprintf(instructions + strlen(instructions), sizeof(instructions) - sizeof(strlen(instructions)),
+             "%s*%s*%d.g", node->getId().c_str(), parent->getId().c_str(), midKey); // move key from node to node
+
 	// check if parent needs to split
 	if (parent->getFull()){
 		// split parent
+        snprintf(instructions + strlen(instructions), sizeof(instructions) - sizeof(strlen(instructions)),
+                 "%s*s", parent->getId().c_str()); // split node
 		return this->splitNode(parent);
 	}
 	// return 0 if works
@@ -156,15 +162,17 @@ int BTree::insert(int key) {
 				break;
 			}
 		}
-		snprintf(instructions + strlen(instructions), sizeof(instructions) - sizeof(strlen(instructions)), "%d*l", index);
 		nodeptr = node.getChild(index);
 		node = *node.getChild(index);
 	}
 	BTreeNode& insNode = *nodeptr;
-    //snprintf(instructions + strlen(instructions), sizeof(instructions) - sizeof(strlen(instructions)), "%d.%d*g", key, insNode.getId());
+    snprintf(instructions + strlen(instructions), sizeof(instructions) - sizeof(strlen(instructions)),
+             "%s*%d.g", nodeptr->getId().c_str(), key); // move from temp to node
 	insNode.insertKey(key);
-	if (insNode.getFull()) { this->splitNode(nodeptr); }
-	//snprintf(instructions + strlen(instructions), sizeof(instructions) - sizeof(strlen(instructions)), "----------\n");
+    if (insNode.getFull()) {
+        snprintf(instructions + strlen(instructions), sizeof(instructions) - sizeof(strlen(instructions)),
+                 "%s*s", nodeptr->getId().c_str()); // split node
+        this->splitNode(nodeptr); }
 	return 0;
 }
 
@@ -193,7 +201,6 @@ int BTree::remove(int key) {
 			this->mergeLeafNodes(node);
 
 		}
-		snprintf(instructions + strlen(instructions), sizeof(instructions) - sizeof(strlen(instructions)), "----------\n");
 		return 0;
 	}
 	int index;
@@ -208,17 +215,18 @@ int BTree::remove(int key) {
 		node->removeKey(key);
 		key = node->getChild(index + 1)->getKeyAtIndex(0);
 		node->insertKey(key);
-        snprintf(instructions + strlen(instructions), sizeof(instructions) - sizeof(strlen(instructions)), "Err",key); // insert node
 		if (node->size() < _middle and !node->getLeaf()) {
 			this->mergeNodes(node);
 		}
 		node = node->getChild(index + 1);
 		index = 0;
 	}
+
 	node->removeKey(node->getKeyAtIndex(0));
 	if (node->size() == 0 and node->getLeaf()) {
-		this->mergeLeafNodes(node);
+        return this->mergeLeafNodes(node);
 	}
+    return 0;
 }
 
 /*

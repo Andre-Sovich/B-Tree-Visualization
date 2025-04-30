@@ -44,7 +44,7 @@ public:
 
     void makeChild(std::string childIndex, std::string parentIndex);
 
-    void gotoNode(std::string key, std::string curIndex, std::string newIndex);
+    void gotoNode(std::string curIndex, std::string newIndex, std::string key);
 
     bool compareTiles(std::string curKey, std::string refKey, std::string index);
 
@@ -60,9 +60,13 @@ public:
 
     void respaceNodes();
 
-    void runAnimationString();
+    void splitNode(std::string index);
+
+    void runAnimationString(std::string instr);
 
     void callAnimation(char c);
+
+    void lineAnimation(QPushButton* parent, QPushButton* child);
 
 private slots:
     void on_insert_button_clicked();

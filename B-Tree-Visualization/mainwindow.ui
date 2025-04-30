@@ -1626,19 +1626,6 @@
      <set>Qt::AlignmentFlag::AlignCenter</set>
     </property>
    </widget>
-   <widget class="QPushButton" name="pushButton">
-    <property name="geometry">
-     <rect>
-      <x>148</x>
-      <y>88</y>
-      <width>75</width>
-      <height>24</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>PushButton</string>
-    </property>
-   </widget>
    <widget class="QWidget" name="layoutWidget">
     <property name="geometry">
      <rect>
@@ -1924,9 +1911,9 @@
    <widget class="QGroupBox" name="spawnNode">
     <property name="geometry">
      <rect>
-      <x>390</x>
-      <y>130</y>
-      <width>151</width>
+      <x>30</x>
+      <y>470</y>
+      <width>121</width>
       <height>71</height>
      </rect>
     </property>

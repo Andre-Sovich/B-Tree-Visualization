@@ -6,7 +6,7 @@
 #include <QtCore/qforeach.h>
 #include <QGraphicsScene>
 #include <QPropertyAnimation>
-#include <QHash>
+#include <QMap>
 #include <QSequentialAnimationGroup>
 #include <QLayout>
 
@@ -40,7 +40,7 @@ std::string keyStr = "";// key string
 std::string indStr = "";// index string
 std::string refStr = "";// reference key
 bool setRef = false; // reference set
-QHash<std::string, QGroupBox *> nodeHash;
+QMap<std::string, QGroupBox *> nodeMap;
 QSequentialAnimationGroup animSeq;
 
 MainWindow::~MainWindow()
@@ -56,7 +56,7 @@ void MainWindow::on_insert_button_clicked()
         if(tree_identifier == 1){
             //B Tree insert
             b_tree->insert(ui->input_textbox->text().toInt());
-            runAnimationString();
+            runAnimationString(b_tree->getCurrentInstructions());
             clearDisplay();
             queue<BTreeNode*> queue = b_tree->treeToQueue();
             displayTreeFromQueue(queue);
@@ -839,17 +839,18 @@ void MainWindow::createNode(std::string index){
     QHBoxLayout *hbox = new QHBoxLayout(ui->centralwidget);
     QGroupBox * Qnode = new QGroupBox(ui->centralwidget);
     Qnode->setLayout(hbox);
-    Qnode->setGeometry(QRect(340,110, 50, 50));
+    Qnode->setGeometry(QRect(340,110, 0, 0));
 
     // add to someway to keep track of nodes
-    nodeHash[index] = Qnode;
+    nodeMap[index] = Qnode;
 
     // animate tree tile
     QPropertyAnimation animation = new QPropertyAnimation(Qnode, "geometry");
     animation.setDuration(250);
     animation.setStartValue(Qnode->geometry());
-    animation.setEndValue(QRect(340,110,0,0));
+    animation.setEndValue(QRect(340,110,5,50));
     animation.start();
+    Qnode->show();
 }
 /* labeled 'm'
  * Follows: %s(1)*%s(2)*m
@@ -865,15 +866,42 @@ void MainWindow::makeChild(std::string childIndex, std::string parentIndex){
 /* labeled 'g'
  * Follows: %d.%d*%d*g
    Line: "Key %d was moved from node %d to %d"*/
-void MainWindow::gotoNode(std::string key, std::string curIndex, std::string newIndex){
-    // get current parent node
+void MainWindow::gotoNode(std::string curIndex, std::string newIndex, std::string key){
+    QGroupBox * curNode;
+    // check if newIndex is empty
+    if (newIndex == ""){
+        // if it is, create 0th node
+        createNode(curIndex);
+        newIndex = curIndex;
+        curNode = ui->spawnNode;
+    }
+    else{
+        curNode = * nodeMap.find(curIndex);
+    }
 
-    // get tile
+    // get key
+    QList<QLabel *> keys = curNode->findChildren<QLabel *>();
+    QLabel * keyRef = NULL;
+    for (QList<QLabel *>::Iterator it = keys.begin(); it != keys.end(); ++it){
+        QLabel* currentLabel = *it;
+        if (currentLabel->text() == QString::fromStdString(key)){
+            keyRef = currentLabel;
+            break;
+        }
+    }
+    if(keyRef == NULL) return;
 
     // get node to place tile in
+    QGroupBox * newNode = * nodeMap.find(curIndex);
 
     // move tile to node location
 
+    curNode->layout()->removeWidget(keyRef);
+    newNode->layout()->addWidget(keyRef);
+
+    newNode->show();
+    curNode->show();
+    keyRef->show();
     // compare tiles for each tile in node until placed correctly
 
     // resize node
@@ -947,8 +975,8 @@ void MainWindow::highlightTile(std::string key, std::string index){
     // change color
 }
 
-/* labeled 's'
- * Follows: %d*s
+/* labeled 'z'
+ * Follows: %d*z
    Line: "Node %d was resized"*/
 void MainWindow::resizeNode(std::string index){
     // get node at index
@@ -964,15 +992,83 @@ void MainWindow::resizeNode(std::string index){
  * Follows: a
    Line: "Respaced nodes"*/
 void MainWindow::respaceNodes(){
-    // get root nodes height
+    // Use QHash::key_iterator
+        // for each level, get key,
+        // if key is "0", skip
+        // if not, get key truncated (EX: 001->00)
+        // get truncated's position
+        // move current below truncated by factor x
+        // check if neighbor exists (EX: check if 002 exists)
+            // if it does,
+    // while index
 
-    // for each tier of the tree starting at the top
-    // for
-    //
 }
+/* labeled 's'
+ * Follows: %s*s
+ * Line: split node
+ * NOTE: call BEFORE the index is changed in BTree->splitnode*/
+void MainWindow::splitNode(std::string index){
+    // get nodes parent (truncate index)
+    std::string pIndex = index;
+    std::string tIndex ("");
+    while (pIndex != ""){
+        if (pIndex[pIndex.length() - 1] != '/'){
+            tIndex.insert(0,1,pIndex[pIndex.length() - 1]);
+            pIndex.erase(pIndex.length());
+        }
+        else break;
+    }
+    // check if nodes parent is null (truncate == "")
+    if (pIndex == ""){
+        // if null, for each entry in map
+            //add 0 to the beginning
+        QMap<std::string, QGroupBox *> tempMap;
+        for (auto [key, value] : nodeMap.asKeyValueRange()) {
+            tempMap["0/" + key] = value;
+        }
+        nodeMap = tempMap;
 
-void MainWindow::runAnimationString(){
-    std::string inst = b_tree->getCurrentInstructions();
+        // create new root node labeled "0"
+        createNode("0");
+        pIndex = "0";
+        // set index to "0/0"
+        index = "0/0";
+    }
+    // if parent not null
+    else {
+        std::string tempIndex = index;
+        int i = stoi(tIndex) + 1;
+        QMap<std::string, QGroupBox *> tempMap;
+        while(nodeMap.contains(pIndex + std::to_string(i))){
+        //for each node on the same level and to the right of index
+            // change index in map to index + 1 (Ex: "001" -> "002")
+            tempMap[pIndex + std::to_string(i + 1)] = * nodeMap.find(pIndex + std::to_string(i));
+        }
+        nodeMap = tempMap;
+    }
+    // create tempIndex as index + /0 (EX: "0/0/1" -> 0/0/1/0)
+    std:: string cIndex = index + "/";
+    int childNum = 0;
+    // while adding + 1 to the end of tempIndex has a mapping
+    while (nodeMap.contains(cIndex + std::to_string(childNum))){
+        childNum ++;
+        // get amount at that level
+    }
+    // for the right half of the mapping at that level
+    QMap<std::string, QGroupBox *> tempMap;
+    for (int i = childNum / 2; i < childNum; i ++){
+        // change index to newsibling id + i (EX: "0/0/1/3" -> "0/0/2/0")
+        int j = i - childNum/2;
+        tempMap[tIndex + std::to_string(j)] = * nodeMap.find(tIndex + std::to_string(i));
+    }
+    nodeMap = tempMap;
+    // create new sibling node with index + 1
+    createNode(pIndex + std::to_string(stoi(tIndex) + 1));
+    // run respace function
+    respaceNodes();
+
+}
+void MainWindow::runAnimationString(std::string inst){
     ui->spawnNode->setTitle(QString::fromStdString(inst));
     for(char& c : inst){
         callAnimation(c);
@@ -983,35 +1079,37 @@ void MainWindow::callAnimation(char c){
     switch (c) {
     case 'k': // Add key
         createKey(keyStr);
+        ui->spawnNode->setTitle(QString::fromStdString("key created"));
         keyStr = "";
         refStr = "";
         indStr = "";
         break;
-    case 'n': // Compare
+    case 'n': // Add node
         createNode(indStr);
         keyStr = "";
         refStr = "";
         indStr = "";
         break;
-    case 'm': // Left
+    case 'm': // make node a childe
         makeChild(indStr, refStr);
         keyStr = "";
         refStr = "";
         indStr = "";
         break;
-    case 'g': // Right
+    case 'g': // Move to Node
+        break;
         gotoNode(keyStr, indStr, refStr);
         keyStr = "";
         refStr = "";
         indStr = "";
         break;
-    case 'c': // Child
+    case 'c': // Compare
         compareTiles(keyStr, refStr, indStr);
         keyStr = "";
         refStr = "";
         indStr = "";
         break;
-    case 'r': // Delete
+    case 'r': // Delete key
         removeTile(keyStr, refStr);
         keyStr = "";
         refStr = "";
@@ -1029,9 +1127,25 @@ void MainWindow::callAnimation(char c){
         break;
     default:
         // check if its a digit for a key
-        if(isdigit(c)){
-            intStr += c;
-        }
+        intStr += c;
         break;
     }
 }
+
+/*
+void MainWindow::lineAnimation(QPushButton* parent, QPushButton* child){//Jmods
+    if(!parent || !child) return;
+
+    QRect parentPos = parent->geometry();
+    QRect childPos = child->geometry();
+
+    QPoint lineParent = QPoint(parentPos.center().x(), parentPos.center().y());
+    QPoint lineChild = QPoint(childPos.center().x(), childPos.center().y());
+
+    movingPoint = lineParent;
+    lineAnimationStep = 0;
+    drawingLine = true;
+    lineAnimationTimer->start(10);
+
+}
+*/
