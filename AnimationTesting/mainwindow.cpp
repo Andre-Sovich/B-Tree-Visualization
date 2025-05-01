@@ -148,8 +148,10 @@ void MainWindow::onMovementTree(QString& key,QString& ref, char animationType){/
     connect(animation, &QPropertyAnimation::finished, this, [=]() {
         lineAnimation(tileMap["tile1"], tileMap["tile2"]); // Call lineAnimation only after movement
 
+        onMovementFinished(key);
         if (animationType == 'r') outlineNode({compareTile, currentTile});
         if (animationType == 'l') outlineNode({currentTile, compareTile});
+        update();
     });
     //highlightNode({tile});//Jmod ---
     onHighlightTile(this->tileMap[ref]);//test if function works--Mmod
@@ -159,8 +161,8 @@ void MainWindow::onCompareTreeNodes(QString& key,QString& ref){
     onMovementTree(ref,key, 'c');
 }
 
-void MainWindow::lineAnimation(QPushButton* parent, QPushButton* child){//Jmods
-    if(!parent || !child) return;
+void MainWindow::lineAnimation(QPushButton* parent, QPushButton* child) {
+    if (!parent || !child) return;
 
     QRect parentPos = parent->geometry();
     QRect childPos = child->geometry();
@@ -168,28 +170,32 @@ void MainWindow::lineAnimation(QPushButton* parent, QPushButton* child){//Jmods
     lineParent = QPoint(parentPos.center().x(), parentPos.center().y());
     lineChild = QPoint(childPos.center().x(), childPos.center().y());
 
+    // Store the line data (don't draw it yet)
+    LineData newLine;
+    newLine.start = lineParent;
+    newLine.end = lineChild;
+    lines.append(newLine); // Save the line to the list
+
     movingPoint = lineParent;
     lineAnimationStep = 0;
     drawingLine = true;
     lineAnimationTimer->start(10);
-
 }
-void MainWindow::moveLine(){//Jmods
-    if(lineAnimationStep >= totalLineSteps){
+
+void MainWindow::moveLine() {
+    if (lineAnimationStep >= totalLineSteps) {
         lineAnimationTimer->stop();
         drawingLine = false;
         return;
     }
-    QRect childPos = this->tileMap["tile2"]->geometry();
     qreal progress = (qreal)lineAnimationStep / totalLineSteps;
-    movingPoint.setX(lineParent.x() + (progress*(lineChild.x()- lineParent.x())));
-    movingPoint.setY(lineParent.y() + (progress * (childPos.center().y() - lineParent.y())));
+    movingPoint.setX(lineParent.x() + (progress * (lineChild.x() - lineParent.x())));
+    movingPoint.setY(lineParent.y() + (progress * (lineChild.y() - lineParent.y())));
     animatedLine = QLine(lineParent, movingPoint);
 
-    update();
     lineAnimationStep++;
-
 }
+
 
 
 void MainWindow::onLeftTreeNode(QString& key,QString& ref){
@@ -231,10 +237,12 @@ void MainWindow::paintEvent(QPaintEvent *event) { //Jmods
     if(drawingLine){
         painter.drawLine(animatedLine);
     }
-    if(drawOutlineRect){
-        painter.drawRect(outlineRect);
+    for(const QRect &rect : nodeOutlines.values()){
+        painter.drawRect(rect);
     }
-
+    for (const LineData &line : lines) {
+        painter.drawLine(line.start, line.end);
+    }
 }
 
 //input can be put in as {tile1, tile2, tile3} even if it's a single tile
@@ -287,12 +295,25 @@ void MainWindow::onHighlightTile(QPushButton* highlightTile){//MMods
         highlightTile->setStyleSheet("background-color: red; color: white;");
     }
 }
-void MainWindow::outlineNode(const QList<QPushButton*>& tiles){
-    //drawOutlineRect = false;
-    //update();
-    rectWidth = ((nodeWidth)*tiles.count()+45);
-    rectHeight = (nodeHeight+20);
-    outlineRect = QRect(tiles[0]->geometry().x()-10, tiles[0]->geometry().y()-10, rectWidth, rectHeight);
-    drawOutlineRect = true;
+void MainWindow::outlineNode(const std::string nodeKey){
+    if(!nodeMap.contains(nodeKey)) return;
+
+    QGroupBox* nodeBox = nodeMap[nodeKey];
+    if(!nodeBox) return;
+    QRect nodeRect = nodeBox->geometry();
+    QRect outline = QRect(
+        nodeRect.x() -5,
+        nodeRect.y() -5,
+        nodeRect.width() + 10,
+        nodeRect.height() + 10
+        );
+    nodeOutlines[nodeKey] = outline;
     update();
 }
+void MainWindow::onMovementFinished(QString nodeKey) {
+    if (!nodeMap.contains(nodeKey)) return;
+    QRect geom = nodeMap[nodeKey]->geometry();
+    nodeOutlines[nodeKey] = QRect(geom.x()-5, geom.y()-5, geom.width()+10, geom.height()+10);
+    updated();
+}
+

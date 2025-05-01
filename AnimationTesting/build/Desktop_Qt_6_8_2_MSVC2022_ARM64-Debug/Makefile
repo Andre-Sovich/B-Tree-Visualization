@@ -292,6 +292,7 @@ C:\Mac\Home\Documents\Capstone\CapstoneEdits\B-Tree-Visualization\AnimationTesti
 		C:\Qt\6.8.2\msvc2022_arm64\mkspecs\features\resolve_config.prf \
 		C:\Qt\6.8.2\msvc2022_arm64\mkspecs\features\exclusive_builds_post.prf \
 		C:\Qt\6.8.2\msvc2022_arm64\mkspecs\features\default_post.prf \
+		C:\Qt\6.8.2\msvc2022_arm64\mkspecs\features\win32\console.prf \
 		C:\Qt\6.8.2\msvc2022_arm64\mkspecs\features\qml_debug.prf \
 		C:\Qt\6.8.2\msvc2022_arm64\mkspecs\features\precompile_header.prf \
 		C:\Qt\6.8.2\msvc2022_arm64\mkspecs\features\warn_on.prf \
@@ -303,7 +304,6 @@ C:\Mac\Home\Documents\Capstone\CapstoneEdits\B-Tree-Visualization\AnimationTesti
 		C:\Qt\6.8.2\msvc2022_arm64\mkspecs\features\uic.prf \
 		C:\Qt\6.8.2\msvc2022_arm64\mkspecs\features\qmake_use.prf \
 		C:\Qt\6.8.2\msvc2022_arm64\mkspecs\features\file_copies.prf \
-		C:\Qt\6.8.2\msvc2022_arm64\mkspecs\features\win32\windows.prf \
 		C:\Qt\6.8.2\msvc2022_arm64\mkspecs\features\testcase_targets.prf \
 		C:\Qt\6.8.2\msvc2022_arm64\mkspecs\features\exceptions.prf \
 		C:\Qt\6.8.2\msvc2022_arm64\mkspecs\features\yacc.prf \
@@ -312,12 +312,10 @@ C:\Mac\Home\Documents\Capstone\CapstoneEdits\B-Tree-Visualization\AnimationTesti
 		C:\Qt\6.8.2\msvc2022_arm64\lib\Qt6Widgets.prl \
 		C:\Qt\6.8.2\msvc2022_arm64\lib\Qt6Gui.prl \
 		C:\Qt\6.8.2\msvc2022_arm64\lib\Qt6Core.prl \
-		C:\Qt\6.8.2\msvc2022_arm64\lib\Qt6EntryPoint.prl \
 		C:\Qt\6.8.2\msvc2022_arm64\mkspecs\features\build_pass.prf \
 		C:\Qt\6.8.2\msvc2022_arm64\lib\Qt6Widgetsd.prl \
 		C:\Qt\6.8.2\msvc2022_arm64\lib\Qt6Guid.prl \
-		C:\Qt\6.8.2\msvc2022_arm64\lib\Qt6Cored.prl \
-		C:\Qt\6.8.2\msvc2022_arm64\lib\Qt6EntryPointd.prl
+		C:\Qt\6.8.2\msvc2022_arm64\lib\Qt6Cored.prl
 	$(QMAKE) -o C:\Mac\Home\Documents\Capstone\CapstoneEdits\B-Tree-Visualization\AnimationTesting\build\Desktop_Qt_6_8_2_MSVC2022_ARM64-Debug\Makefile ..\..\AnimationTesting.pro -spec win32-arm64-msvc "CONFIG+=debug" "CONFIG+=qml_debug"
 C:\Qt\6.8.2\msvc2022_arm64\mkspecs\features\spec_pre.prf:
 C:\Qt\6.8.2\msvc2022_arm64\mkspecs\common\windows-desktop.conf:
@@ -527,6 +525,7 @@ C:\Qt\6.8.2\msvc2022_arm64\mkspecs\features\win32\default_pre.prf:
 C:\Qt\6.8.2\msvc2022_arm64\mkspecs\features\resolve_config.prf:
 C:\Qt\6.8.2\msvc2022_arm64\mkspecs\features\exclusive_builds_post.prf:
 C:\Qt\6.8.2\msvc2022_arm64\mkspecs\features\default_post.prf:
+C:\Qt\6.8.2\msvc2022_arm64\mkspecs\features\win32\console.prf:
 C:\Qt\6.8.2\msvc2022_arm64\mkspecs\features\qml_debug.prf:
 C:\Qt\6.8.2\msvc2022_arm64\mkspecs\features\precompile_header.prf:
 C:\Qt\6.8.2\msvc2022_arm64\mkspecs\features\warn_on.prf:
@@ -538,7 +537,6 @@ C:\Qt\6.8.2\msvc2022_arm64\mkspecs\features\moc.prf:
 C:\Qt\6.8.2\msvc2022_arm64\mkspecs\features\uic.prf:
 C:\Qt\6.8.2\msvc2022_arm64\mkspecs\features\qmake_use.prf:
 C:\Qt\6.8.2\msvc2022_arm64\mkspecs\features\file_copies.prf:
-C:\Qt\6.8.2\msvc2022_arm64\mkspecs\features\win32\windows.prf:
 C:\Qt\6.8.2\msvc2022_arm64\mkspecs\features\testcase_targets.prf:
 C:\Qt\6.8.2\msvc2022_arm64\mkspecs\features\exceptions.prf:
 C:\Qt\6.8.2\msvc2022_arm64\mkspecs\features\yacc.prf:
@@ -547,12 +545,10 @@ C:\Mac\Home\Documents\Capstone\CapstoneEdits\B-Tree-Visualization\AnimationTesti
 C:\Qt\6.8.2\msvc2022_arm64\lib\Qt6Widgets.prl:
 C:\Qt\6.8.2\msvc2022_arm64\lib\Qt6Gui.prl:
 C:\Qt\6.8.2\msvc2022_arm64\lib\Qt6Core.prl:
-C:\Qt\6.8.2\msvc2022_arm64\lib\Qt6EntryPoint.prl:
 C:\Qt\6.8.2\msvc2022_arm64\mkspecs\features\build_pass.prf:
 C:\Qt\6.8.2\msvc2022_arm64\lib\Qt6Widgetsd.prl:
 C:\Qt\6.8.2\msvc2022_arm64\lib\Qt6Guid.prl:
 C:\Qt\6.8.2\msvc2022_arm64\lib\Qt6Cored.prl:
-C:\Qt\6.8.2\msvc2022_arm64\lib\Qt6EntryPointd.prl:
 qmake: FORCE
 	@$(QMAKE) -o C:\Mac\Home\Documents\Capstone\CapstoneEdits\B-Tree-Visualization\AnimationTesting\build\Desktop_Qt_6_8_2_MSVC2022_ARM64-Debug\Makefile ..\..\AnimationTesting.pro -spec win32-arm64-msvc "CONFIG+=debug" "CONFIG+=qml_debug"
 

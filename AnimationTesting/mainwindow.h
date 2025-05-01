@@ -43,10 +43,11 @@ public:
     void highlightNode(const QList<QPushButton*>& tiles);
     void highlightNodeWithColor(const QList<QPushButton*>& tiles, const QString& color);
     void shiftNode(const QList<QPushButton*>& tiles);
-    void outlineNode(const QList<QPushButton*>& tiles);
+    void outlineNode(const std::string nodeKey);
     void onMovementTree(QString& key,QString& ref, char animationType); // refactor  --Mmods
     void onRemoveTile();
     void onHighlightTile(QPushButton* highlightTile);
+    void onMovementFinished(QString nodeKey);
 
 
 private slots:
@@ -70,8 +71,14 @@ private://Jmods
     bool drawOutlineRect = false;
     QRect outlineRect;
     QHash<QString, QPushButton*> tileMap;
+    QHash<std::string, QRect> nodeOutlines;
     int tileCount;
     QList<QString> tileKeys;// keep track of keysstring name
+    struct LineData {
+        QPoint start;
+        QPoint end;
+    };
+    QList<LineData> lines;
 };
 
 #endif // MAINWINDOW_H
