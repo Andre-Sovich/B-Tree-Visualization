@@ -14,6 +14,7 @@
 #include <BTree.h>
 #include <QPropertyAnimation>
 #include <QGraphicsLineItem>
+#include <QGroupBox>
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -26,6 +27,20 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
+
+    QTimer *lineAnimationTimer;
+    int lineAnimationStep = 0;
+    int totalLineSteps = 50;
+    QPoint lineParent, lineChild, movingPoint;
+    QLine animatedLine;
+    bool drawingLine = false;
+
+    struct LineData {
+        QPoint start;
+        QPoint end;
+    };
+    QList<LineData> lines;
+
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
     QTextStream out;
@@ -67,9 +82,11 @@ public:
 
     void callAnimation(char c);
 
-    void lineAnimation(QPushButton* parent, QPushButton* child);
+    void lineAnimation(QGroupBox* parent, QGroupBox* child);
 
     void displayInstr(std::string instructions);
+
+    void paintEvent(QPaintEvent *event);
 
 private slots:
     void on_insert_button_clicked();
@@ -91,6 +108,8 @@ private slots:
     void clearDisplay();
 
     bool isNumber(std::string string);
+
+    void moveLine();
 
 
 

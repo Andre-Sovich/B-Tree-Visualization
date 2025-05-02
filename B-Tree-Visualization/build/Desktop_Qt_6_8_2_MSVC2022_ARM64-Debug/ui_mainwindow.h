@@ -400,15 +400,15 @@ public:
         btree_radio_button->setChecked(true);
         tree = new QFrame(centralwidget);
         tree->setObjectName("tree");
-        tree->setGeometry(QRect(0, 100, 691, 371));
+        tree->setGeometry(QRect(0, 110, 691, 371));
         tree->setFrameShape(QFrame::Shape::StyledPanel);
         tree->setFrameShadow(QFrame::Shadow::Raised);
         MainWindow->setCentralWidget(centralwidget);
         spawnNode->raise();
         Qlabel_at_top->raise();
         message_display_textedit->raise();
-        groupBox->raise();
-        groupBox->raise();
+        groupBox1->raise();
+        groupBox1->raise();
         tree->raise();
         menubar = new QMenuBar(MainWindow);
         menubar->setObjectName("menubar");

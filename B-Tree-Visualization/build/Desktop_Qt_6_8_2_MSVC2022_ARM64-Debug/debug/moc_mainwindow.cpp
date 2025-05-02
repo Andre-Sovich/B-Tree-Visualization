@@ -52,6 +52,7 @@ static constexpr auto qt_meta_stringdata_ZN10MainWindowE = QtMocHelpers::stringD
     "isNumber",
     "std::string",
     "string",
+    "moveLine",
     "on_find_button_clicked",
     "getInstructionVector",
     "on_step_forward_button_clicked",
@@ -67,7 +68,7 @@ Q_CONSTINIT static const uint qt_meta_data_ZN10MainWindowE[] = {
       12,       // revision
        0,       // classname
        0,    0, // classinfo
-      14,   14, // methods
+      15,   14, // methods
        0,    0, // properties
        0,    0, // enums/sets
        0,    0, // constructors
@@ -75,20 +76,21 @@ Q_CONSTINIT static const uint qt_meta_data_ZN10MainWindowE[] = {
        0,       // signalCount
 
  // slots: name, argc, parameters, tag, flags, initial metatype offsets
-       1,    0,   98,    2, 0x08,    1 /* Private */,
-       3,    0,   99,    2, 0x08,    2 /* Private */,
-       4,    0,  100,    2, 0x08,    3 /* Private */,
-       5,    0,  101,    2, 0x08,    4 /* Private */,
-       6,    0,  102,    2, 0x08,    5 /* Private */,
-       7,    0,  103,    2, 0x08,    6 /* Private */,
-       8,    1,  104,    2, 0x08,    7 /* Private */,
-      10,    0,  107,    2, 0x08,    9 /* Private */,
-      11,    0,  108,    2, 0x08,   10 /* Private */,
-      12,    1,  109,    2, 0x08,   11 /* Private */,
-      15,    0,  112,    2, 0x08,   13 /* Private */,
-      16,    0,  113,    2, 0x08,   14 /* Private */,
-      17,    0,  114,    2, 0x08,   15 /* Private */,
-      18,    0,  115,    2, 0x08,   16 /* Private */,
+       1,    0,  104,    2, 0x08,    1 /* Private */,
+       3,    0,  105,    2, 0x08,    2 /* Private */,
+       4,    0,  106,    2, 0x08,    3 /* Private */,
+       5,    0,  107,    2, 0x08,    4 /* Private */,
+       6,    0,  108,    2, 0x08,    5 /* Private */,
+       7,    0,  109,    2, 0x08,    6 /* Private */,
+       8,    1,  110,    2, 0x08,    7 /* Private */,
+      10,    0,  113,    2, 0x08,    9 /* Private */,
+      11,    0,  114,    2, 0x08,   10 /* Private */,
+      12,    1,  115,    2, 0x08,   11 /* Private */,
+      15,    0,  118,    2, 0x08,   13 /* Private */,
+      16,    0,  119,    2, 0x08,   14 /* Private */,
+      17,    0,  120,    2, 0x08,   15 /* Private */,
+      18,    0,  121,    2, 0x08,   16 /* Private */,
+      19,    0,  122,    2, 0x08,   17 /* Private */,
 
  // slots: parameters
     QMetaType::Void,
@@ -101,6 +103,7 @@ Q_CONSTINIT static const uint qt_meta_data_ZN10MainWindowE[] = {
     QMetaType::Void,
     QMetaType::Void,
     QMetaType::Bool, 0x80000000 | 13,   14,
+    QMetaType::Void,
     QMetaType::Void,
     QMetaType::Void,
     QMetaType::Void,
@@ -140,6 +143,8 @@ Q_CONSTINIT const QMetaObject MainWindow::staticMetaObject = { {
         // method 'isNumber'
         QtPrivate::TypeAndForceComplete<bool, std::false_type>,
         QtPrivate::TypeAndForceComplete<std::string, std::false_type>,
+        // method 'moveLine'
+        QtPrivate::TypeAndForceComplete<void, std::false_type>,
         // method 'on_find_button_clicked'
         QtPrivate::TypeAndForceComplete<void, std::false_type>,
         // method 'getInstructionVector'
@@ -168,10 +173,11 @@ void MainWindow::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, 
         case 8: _t->clearDisplay(); break;
         case 9: { bool _r = _t->isNumber((*reinterpret_cast< std::add_pointer_t<std::string>>(_a[1])));
             if (_a[0]) *reinterpret_cast< bool*>(_a[0]) = std::move(_r); }  break;
-        case 10: _t->on_find_button_clicked(); break;
-        case 11: _t->getInstructionVector(); break;
-        case 12: _t->on_step_forward_button_clicked(); break;
-        case 13: _t->on_step_back_button_clicked(); break;
+        case 10: _t->moveLine(); break;
+        case 11: _t->on_find_button_clicked(); break;
+        case 12: _t->getInstructionVector(); break;
+        case 13: _t->on_step_forward_button_clicked(); break;
+        case 14: _t->on_step_back_button_clicked(); break;
         default: ;
         }
     }
@@ -196,14 +202,14 @@ int MainWindow::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
     if (_id < 0)
         return _id;
     if (_c == QMetaObject::InvokeMetaMethod) {
-        if (_id < 14)
+        if (_id < 15)
             qt_static_metacall(this, _c, _id, _a);
-        _id -= 14;
+        _id -= 15;
     }
     if (_c == QMetaObject::RegisterMethodArgumentMetaType) {
-        if (_id < 14)
+        if (_id < 15)
             *reinterpret_cast<QMetaType *>(_a[0]) = QMetaType();
-        _id -= 14;
+        _id -= 15;
     }
     return _id;
 }

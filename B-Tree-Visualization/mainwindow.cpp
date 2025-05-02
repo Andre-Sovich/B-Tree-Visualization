@@ -11,6 +11,7 @@
 #include <QLayout>
 #include <vector>
 #include <format>
+#include <QTimer>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -426,6 +427,10 @@ void MainWindow::resizeNode(std::string index){
  * Follows: a
    Line: "Respaced nodes"*/
 void MainWindow::respaceNodes() {
+    lineAnimationTimer = new QTimer(this);//Jmods
+    connect(lineAnimationTimer, &QTimer::timeout, this, &MainWindow::moveLine);
+    lines.clear();
+    update();
     if (nodeMap.isEmpty()) return;
     // Constants for layout
     const int levelHeight = 100;  // Vertical space between levels
@@ -473,40 +478,10 @@ void MainWindow::respaceNodes() {
         std::string parentKey = key.substr(0, key.find_last_of('/'));
         if (nodeMap.contains(parentKey)) {
             QGroupBox* parent = nodeMap[parentKey];
+            QGroupBox* child = node;
 
-            QPoint parentBottom(parent->geometry().center().x(),
-                                parent->geometry().bottom());
-            QPoint childTop(node->geometry().center().x(),
-                            node->geometry().top());
-
-            // Create a line using a QLabel with a styled border
-            QLabel* line = new QLabel(ui->tree);
-            line->setStyleSheet("background-color: black;");
-
-            // Calculate line position and size
-            if (parentBottom.x() == childTop.x()) {
-                // Vertical line
-                line->setGeometry(parentBottom.x() - 1, parentBottom.y(),
-                                  2, childTop.y() - parentBottom.y());
-            } else {
-                // Diagonal line - we'll approximate with small segments
-                int dx = childTop.x() - parentBottom.x();
-                int dy = childTop.y() - parentBottom.y();
-                double length = sqrt(dx*dx + dy*dy);
-                double angle = atan2(dy, dx);
-
-                // Create a straight horizontal line and rotate it via stylesheet
-                line->setGeometry(parentBottom.x(), parentBottom.y(),
-                                  length, 2);
-                line->setStyleSheet(QString(
-                                        "background-color: black;"
-                                        "border: none;"
-                                        "transform-origin: left center;"
-                                        "transform: rotate(%1rad);"
-                                        ).arg(angle));
-            }
-            line->show();
-            connectionLines.append(line);
+            lineAnimation(parent,child);
+            update();
         }
     }
 }
@@ -600,6 +575,8 @@ void MainWindow::splitNode(std::string index) {
     nodeMap = newMap;
 }
 
+
+
 void MainWindow::runAnimationString(std::string inst){
     for(char& c : inst){
         callAnimation(c);
@@ -607,6 +584,54 @@ void MainWindow::runAnimationString(std::string inst){
     displayInstr(logStr);
     logStr = "";
 }
+void MainWindow::lineAnimation(QGroupBox* parent, QGroupBox* child) {
+    if (!parent || !child) return;
+
+    QRect parentPos = parent->geometry();
+    QRect childPos = child->geometry();
+
+    lineParent = QPoint(parentPos.center().x(), parentPos.center().y()+100);
+    lineChild = QPoint(childPos.center().x(), childPos.center().y()+100);
+
+    // Store the line data (don't draw it yet)
+    LineData newLine;
+    newLine.start = lineParent;
+    newLine.end = lineChild;
+    lines.append(newLine); // Save the line to the list
+
+    movingPoint = lineParent;
+    lineAnimationStep = 0;
+    drawingLine = true;
+    lineAnimationTimer->start(10);
+}
+
+void MainWindow::paintEvent(QPaintEvent *event) { //Jmods
+    QPainter painter(this);
+    painter.setPen(QPen(Qt::black, 5));
+
+
+    if(drawingLine){
+        painter.drawLine(animatedLine);
+    }
+    for (const LineData &line : lines) {
+        painter.drawLine(line.start, line.end);
+    }
+}
+
+void MainWindow::moveLine() {
+    if (lineAnimationStep >= totalLineSteps) {
+        lineAnimationTimer->stop();
+        drawingLine = false;
+        return;
+    }
+    qreal progress = (qreal)lineAnimationStep / totalLineSteps;
+    movingPoint.setX(lineParent.x() + (progress * (lineChild.x() - lineParent.x())));
+    movingPoint.setY(lineParent.y() + (progress * (lineChild.y() - lineParent.y())));
+    animatedLine = QLine(lineParent, movingPoint);
+
+    lineAnimationStep++;
+}
+
 
 void MainWindow::callAnimation(char c){
     switch (c) {
