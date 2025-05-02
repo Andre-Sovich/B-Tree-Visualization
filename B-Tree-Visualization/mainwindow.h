@@ -69,6 +69,8 @@ public:
 
     void lineAnimation(QPushButton* parent, QPushButton* child);
 
+    void displayInstr(std::string instructions);
+
 private slots:
     void on_insert_button_clicked();
 

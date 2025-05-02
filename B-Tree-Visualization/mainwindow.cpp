@@ -10,6 +10,7 @@
 #include <QSequentialAnimationGroup>
 #include <QLayout>
 #include <vector>
+#include <format>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -39,6 +40,7 @@ std::string intStr = "";// temporary string for ints
 std::string keyStr = "";// key string
 std::string indStr = "";// index string
 std::string refStr = "";// reference key
+std::string logStr = "";
 bool showIndex = false;
 QMap<std::string, QGroupBox *> nodeMap;
 QSequentialAnimationGroup animSeq;
@@ -61,21 +63,18 @@ void MainWindow::on_insert_button_clicked()
             runAnimationString(b_tree->getCurrentInstructions());
             queue<BTreeNode*> queue = b_tree->treeToQueue();
             QString instructions(b_tree->getCurrentInstructions());
-            ui->message_display_textedit->setPlainText(instructions);
         }
 
         if(tree_identifier == 2){   // B+ Insert
             bplus_tree->insert(ui->input_textbox->text().toInt());
             queue<BPlusTreeNode*> queue = bplus_tree->treeToQueue();
             QString instructions(bplus_tree->getCurrentInstructions());
-            ui->message_display_textedit->setPlainText(instructions);
         }
 
         if(tree_identifier == 3){   // B* Insert
             bstar_tree->insert(ui->input_textbox->text().toInt());
             queue<BPlusTreeNode*> queue = bstar_tree->treeToQueue();
             QString instructions(bstar_tree->getCurrentInstructions());
-            ui->message_display_textedit->setPlainText(instructions);
         }
     }
 
@@ -117,21 +116,18 @@ void MainWindow::on_delete_button_clicked()
             b_tree->remove(ui->input_textbox->text().toInt());
             queue<BTreeNode*> queue = b_tree->treeToQueue();
             QString instructions(b_tree->getCurrentInstructions());
-            ui->message_display_textedit->setPlainText(instructions);
         }
 
         if(tree_identifier == 2){   // B+ Remove
             bplus_tree->remove(ui->input_textbox->text().toInt());
             queue<BPlusTreeNode*> queue = bplus_tree->treeToQueue();
             QString instructions(bplus_tree->getCurrentInstructions());
-            ui->message_display_textedit->setPlainText(instructions);
         }
 
         if(tree_identifier == 3){   // B* Remove
             bstar_tree->remove(ui->input_textbox->text().toInt());
             queue<BPlusTreeNode*> queue = bstar_tree->treeToQueue();
             QString instructions(bstar_tree->getCurrentInstructions());
-            ui->message_display_textedit->setPlainText(instructions);
         }
     }
 }
@@ -141,6 +137,7 @@ void MainWindow::on_clear_button_clicked()
     resetTrees();
     clearDisplay();
     ui->message_display_textedit->setPlainText("");
+    logStr = "";
 }
 
 void MainWindow::max_degree_combo_index_changed(int index)
@@ -189,22 +186,16 @@ void MainWindow::on_find_button_clicked()
         if(tree_identifier == 1){
             b_tree->findDeepestOccurance(findValue);
             queue<BTreeNode*> queue = b_tree->treeToQueue();
-            QString instructions(bplus_tree->getCurrentInstructions());
-            ui->message_display_textedit->setPlainText(instructions);
         }
 
         if(tree_identifier == 2){   // B+
             bplus_tree->find(findValue);
             queue<BPlusTreeNode*> queue = bplus_tree->treeToQueue();
-            QString instructions(bplus_tree->getCurrentInstructions());
-            ui->message_display_textedit->setPlainText(instructions);
         }
 
         if(tree_identifier == 3){   // B*
             bstar_tree->find(findValue);
             queue<BPlusTreeNode*> queue = bstar_tree->treeToQueue();
-            QString instructions(bstar_tree->getCurrentInstructions());
-            ui->message_display_textedit->setPlainText(instructions);
         }
     }
     else{
@@ -287,6 +278,7 @@ void MainWindow::createNode(std::string index) {
     // Store in map
     nodeMap[index] = Qnode;
     if(showIndex) Qnode->setTitle(QString::fromStdString("Node " + index));
+
 }
 
 /* labeled 'g'
@@ -331,8 +323,6 @@ void MainWindow::gotoNode(std::string curIndex, std::string newIndex, std::strin
     curNode->show();
     keyRef->show();
     // compare tiles for each tile in node until placed correctly
-
-    // resize node
 }
 /* labeled 'c'
  * Follows: %d.%d.%d*t
@@ -596,6 +586,8 @@ void MainWindow::runAnimationString(std::string inst){
     for(char& c : inst){
         callAnimation(c);
     }
+    displayInstr(logStr);
+    logStr = "";
 }
 
 void MainWindow::callAnimation(char c){
@@ -607,6 +599,7 @@ void MainWindow::callAnimation(char c){
         indStr = "";
         // Trigger respacing
         respaceNodes();
+        logStr += "Created key.\n";
         break;
     case 'n': // Add node
         createNode(indStr);
@@ -615,6 +608,7 @@ void MainWindow::callAnimation(char c){
         indStr = "";
         // Trigger respacing
         respaceNodes();
+        logStr +=("Created a new node.\n");
         break;
     case 'g': // Move to Node
         gotoNode(indStr, refStr,keyStr);
@@ -623,6 +617,7 @@ void MainWindow::callAnimation(char c){
         indStr = "";
         // Trigger respacing
         respaceNodes();
+        logStr +=("Moved key to new node.\n");
         break;
     case 'c': // Compare
         compareTiles(keyStr, refStr, indStr);
@@ -631,6 +626,7 @@ void MainWindow::callAnimation(char c){
         indStr = "";
         // Trigger respacing
         respaceNodes();
+        logStr +=("Compared the keys in give node.\n");
         break;
     case 'r': // Delete key
         removeTile(keyStr, refStr);
@@ -639,6 +635,7 @@ void MainWindow::callAnimation(char c){
         indStr = "";
         // Trigger respacing
         respaceNodes();
+        logStr +=("Deleted node.\n");
         break;
     case 's': // split node
         splitNode(indStr);
@@ -647,6 +644,7 @@ void MainWindow::callAnimation(char c){
         indStr = "";
         // Trigger respacing
         respaceNodes();
+        logStr +=("Split node because it was too big.\n");
         break;
     case '.': // New int
         if(keyStr == "") keyStr = intStr;
@@ -669,3 +667,6 @@ void MainWindow::callAnimation(char c){
     }
 }
 
+void MainWindow::displayInstr(std::string instructions){
+    ui->message_display_textedit->setPlainText(QString::fromStdString(instructions));
+}
