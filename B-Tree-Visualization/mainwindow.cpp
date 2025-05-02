@@ -265,7 +265,7 @@ void MainWindow::wheelEvent(QWheelEvent * event){
    Line: "Key %d was created"*/
 void MainWindow::createKey(std::string key){
     // create new key
-    QLabel * Qkey = new QLabel(ui->centralwidget);
+    QLabel * Qkey = new QLabel(ui->tree);
     Qkey->setGeometry(340,110, 50, 25);
     Qkey->setText(QString::fromStdString(key));
     QFont font = QFont();
@@ -283,7 +283,7 @@ void MainWindow::createKey(std::string key){
  * Follows: %d*n
    Line: "Node %d created as child to node %d"*/
 void MainWindow::createNode(std::string index) {
-    QGroupBox* Qnode = new QGroupBox(ui->centralwidget);
+    QGroupBox* Qnode = new QGroupBox(ui->tree);
     Qnode->setLayout(new QHBoxLayout());
 
     // Set style
@@ -432,7 +432,7 @@ void MainWindow::respaceNodes() {
     const int siblingSpacing = 50; // Horizontal space between siblings
     const int nodeWidth = 100;
     const int nodeHeight = 50;
-    const int startY = 100;
+    const int startY = 10;
 
     // First, organize nodes by their depth level
     QMap<int, QList<QGroupBox*>> nodesByLevel;
@@ -455,7 +455,7 @@ void MainWindow::respaceNodes() {
         int totalWidth = levelNodes.size() * nodeWidth +
                          (levelNodes.size() - 1) * siblingSpacing;
 
-        int startX = (ui->centralwidget->width() - totalWidth) / 2;
+        int startX = (ui->tree->width() - totalWidth) / 2;
 
         // Position each node in this level
         for (int i = 0; i < levelNodes.size(); i++) {
@@ -480,7 +480,7 @@ void MainWindow::respaceNodes() {
                             node->geometry().top());
 
             // Create a line using a QLabel with a styled border
-            QLabel* line = new QLabel(ui->centralwidget);
+            QLabel* line = new QLabel(ui->tree);
             line->setStyleSheet("background-color: black;");
 
             // Calculate line position and size
