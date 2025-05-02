@@ -130,7 +130,7 @@ int BTree::splitNode(BTreeNode* node) {
 	// remove middle from node
 	node->removeKey(midKey);
     snprintf(instructions + strlen(instructions), sizeof(instructions) - sizeof(strlen(instructions)),
-             "%s*%s*%d.g", node->getId().c_str(), parent->getId().c_str(), midKey); // move key from node to node
+             "%s*%s*%d.g,", node->getId().c_str(), parent->getId().c_str(), midKey); // move key from node to node
 
 	// check if parent needs to split
 	if (parent->getFull()){
@@ -168,11 +168,11 @@ int BTree::insert(int key) {
 	}
 	BTreeNode& insNode = *nodeptr;
     snprintf(instructions + strlen(instructions), sizeof(instructions) - sizeof(strlen(instructions)),
-             "%s*%d.g", nodeptr->getId().c_str(), key); // move from temp to node
+             "%s*%d.g,", nodeptr->getId().c_str(), key); // move from temp to node
 	insNode.insertKey(key);
     if (insNode.getFull()) {
         snprintf(instructions + strlen(instructions), sizeof(instructions) - sizeof(strlen(instructions)),
-                 "%s*s", nodeptr->getId().c_str()); // split node
+                 "%s*s,", nodeptr->getId().c_str()); // split node
         this->splitNode(nodeptr); }
 	return 0;
 }
@@ -362,20 +362,20 @@ int BTree::mergeNodes(BTreeNode* node)
 			child_Moving->setParent(right_Sibiling);
 			node->removeKey(key);
 			node->removeChild(index + 1);
-			snprintf(instructions + strlen(instructions), sizeof(instructions) - sizeof(strlen(instructions)), "%d*d",index + 2); // delete node
+            snprintf(instructions + strlen(instructions), sizeof(instructions) - sizeof(strlen(instructions)), "%d*d,",index + 2); // delete node
 			right_Sibiling->insertKey(key);
-            //snprintf(instructions + strlen(instructions), sizeof(instructions) - sizeof(strlen(instructions)), "%d.%d*g",key, right_Sibiling->getId()); // move node
+            //snprintf(instructions + strlen(instructions), sizeof(instructions) - sizeof(strlen(instructions)), "%d.%d*g,",key, right_Sibiling->getId()); // move node
 			right_Sibiling->addChild(child_Moving, 0);
-			snprintf(instructions + strlen(instructions), sizeof(instructions) - sizeof(strlen(instructions)), "n"); // add child node
+            snprintf(instructions + strlen(instructions), sizeof(instructions) - sizeof(strlen(instructions)), "n,"); // add child node
 		}
 		child_Moving = node->getChild(0);
 		child_Moving->setParent(right_Sibiling);
 		node->removeChild(0);
-		snprintf(instructions + strlen(instructions), sizeof(instructions) - sizeof(strlen(instructions)), "%d*d",1); // delete node
+        snprintf(instructions + strlen(instructions), sizeof(instructions) - sizeof(strlen(instructions)), "%d*d,",1); // delete node
 		right_Sibiling->addChild(child_Moving,0);
-		snprintf(instructions + strlen(instructions), sizeof(instructions) - sizeof(strlen(instructions)), "n"); // add child node
+        snprintf(instructions + strlen(instructions), sizeof(instructions) - sizeof(strlen(instructions)), "n,"); // add child node
 		parent->removeChild(child_ndx);
-		snprintf(instructions + strlen(instructions), sizeof(instructions) - sizeof(strlen(instructions)), "%d*d",child_ndx + 1); // delete node
+        snprintf(instructions + strlen(instructions), sizeof(instructions) - sizeof(strlen(instructions)), "%d*d,",child_ndx + 1); // delete node
 		if (right_Sibiling->getFull()) { this->splitNode(right_Sibiling); func_called = true; }
 		if (parent->size() < _middle) { this->mergeNodes(parent); func_called = true; }
 	}
@@ -391,19 +391,19 @@ int BTree::mergeNodes(BTreeNode* node)
 			child_Moving->setParent(left_Sibiling);
 			node->removeKey(key);
 			node->removeChild(0);
-			snprintf(instructions + strlen(instructions), sizeof(instructions) - sizeof(strlen(instructions)), "%d*d",1); // delete node
+            snprintf(instructions + strlen(instructions), sizeof(instructions) - sizeof(strlen(instructions)), "%d*d,",1); // delete node
 			left_Sibiling->insertKey(key);
 			left_Sibiling->addChild(child_Moving, left_Sibiling->size());
-			snprintf(instructions + strlen(instructions), sizeof(instructions) - sizeof(strlen(instructions)), "n"); // add child node
+            snprintf(instructions + strlen(instructions), sizeof(instructions) - sizeof(strlen(instructions)), "n,"); // add child node
 		}
 		child_Moving = node->getChild(0);
 		child_Moving->setParent(left_Sibiling);
 		node->removeChild(0);
-		snprintf(instructions + strlen(instructions), sizeof(instructions) - sizeof(strlen(instructions)), "%d*d",1); // delete node
+        snprintf(instructions + strlen(instructions), sizeof(instructions) - sizeof(strlen(instructions)), "%d*d,",1); // delete node
 		left_Sibiling->addChild(child_Moving, left_Sibiling->size());
-		snprintf(instructions + strlen(instructions), sizeof(instructions) - sizeof(strlen(instructions)), "n"); // add child node
+        snprintf(instructions + strlen(instructions), sizeof(instructions) - sizeof(strlen(instructions)), "n,"); // add child node
 		parent->removeChild(child_ndx);
-		snprintf(instructions + strlen(instructions), sizeof(instructions) - sizeof(strlen(instructions)), "%d*d",child_ndx+1); // delete node
+        snprintf(instructions + strlen(instructions), sizeof(instructions) - sizeof(strlen(instructions)), "%d*d,",child_ndx+1); // delete node
 		if (left_Sibiling->getFull()) { this->splitNode(left_Sibiling); func_called = true; }
 		if (parent->size() < _middle) { this->mergeNodes(parent); func_called = true; }
 	}
@@ -422,19 +422,19 @@ int BTree::mergeNodes(BTreeNode* node)
 				child_Moving->setParent(right_Sibiling);
 				node->removeKey(key);
 				node->removeChild(index + 1);
-				snprintf(instructions + strlen(instructions), sizeof(instructions) - sizeof(strlen(instructions)), "%d*d",index + 2); // delete node
+                snprintf(instructions + strlen(instructions), sizeof(instructions) - sizeof(strlen(instructions)), "%d*d,",index + 2); // delete node
 				right_Sibiling->insertKey(key);
 				right_Sibiling->addChild(child_Moving, 0);
-				snprintf(instructions + strlen(instructions), sizeof(instructions) - sizeof(strlen(instructions)), "n"); // add child node
+                snprintf(instructions + strlen(instructions), sizeof(instructions) - sizeof(strlen(instructions)), "n,"); // add child node
 			}
 			child_Moving = node->getChild(0);
 			child_Moving->setParent(right_Sibiling);
 			node->removeChild(0);
-			snprintf(instructions + strlen(instructions), sizeof(instructions) - sizeof(strlen(instructions)), "%d*d",1); // delete node
+            snprintf(instructions + strlen(instructions), sizeof(instructions) - sizeof(strlen(instructions)), "%d*d,",1); // delete node
 			right_Sibiling->addChild(child_Moving, 0);
-			snprintf(instructions + strlen(instructions), sizeof(instructions) - sizeof(strlen(instructions)), "n"); // add child node
+            snprintf(instructions + strlen(instructions), sizeof(instructions) - sizeof(strlen(instructions)), "n,"); // add child node
 			parent->removeChild(child_ndx);
-			snprintf(instructions + strlen(instructions), sizeof(instructions) - sizeof(strlen(instructions)), "%d*d",child_ndx + 1); // delete node
+            snprintf(instructions + strlen(instructions), sizeof(instructions) - sizeof(strlen(instructions)), "%d*d,",child_ndx + 1); // delete node
 			if (right_Sibiling->getFull()) { this->splitNode(right_Sibiling); func_called = true; }
 			if (parent->size() < _middle) { this->mergeNodes(parent); func_called = true; }
 		}
@@ -449,19 +449,19 @@ int BTree::mergeNodes(BTreeNode* node)
 				child_Moving->setParent(left_Sibiling);
 				node->removeKey(key);
 				node->removeChild(0);
-				snprintf(instructions + strlen(instructions), sizeof(instructions) - sizeof(strlen(instructions)), "%d*d",1); // delete node
+                snprintf(instructions + strlen(instructions), sizeof(instructions) - sizeof(strlen(instructions)), "%d*d,",1); // delete node
 				left_Sibiling->insertKey(key);
 				left_Sibiling->addChild(child_Moving, left_Sibiling->size());
-				snprintf(instructions + strlen(instructions), sizeof(instructions) - sizeof(strlen(instructions)), "n"); // add child node
+                snprintf(instructions + strlen(instructions), sizeof(instructions) - sizeof(strlen(instructions)), "n,"); // add child node
 			}
 			child_Moving = node->getChild(0);
 			child_Moving->setParent(left_Sibiling);
 			node->removeChild(0);
-			snprintf(instructions + strlen(instructions), sizeof(instructions) - sizeof(strlen(instructions)), "%d*d",1); // delete node
+            snprintf(instructions + strlen(instructions), sizeof(instructions) - sizeof(strlen(instructions)), "%d*d,",1); // delete node
 			left_Sibiling->addChild(child_Moving, 0);
-			snprintf(instructions + strlen(instructions), sizeof(instructions) - sizeof(strlen(instructions)), "n"); // add child node
+            snprintf(instructions + strlen(instructions), sizeof(instructions) - sizeof(strlen(instructions)), "n,"); // add child node
 			parent->removeChild(child_ndx);
-			snprintf(instructions + strlen(instructions), sizeof(instructions) - sizeof(strlen(instructions)), "%d*d",child_ndx + 1); // delete node
+            snprintf(instructions + strlen(instructions), sizeof(instructions) - sizeof(strlen(instructions)), "%d*d,",child_ndx + 1); // delete node
 			if (left_Sibiling->getFull()) { this->splitNode(left_Sibiling); func_called = true; }
 			if (parent->size() < _middle) { this->mergeNodes(parent); func_called = true; }
 		}
@@ -509,7 +509,7 @@ int BTree::mergeLeafNodes(BTreeNode* node)
 			right_Sibiling->insertKey(key);
 		}
 		parent->removeChild(child_ndx);
-		snprintf(instructions + strlen(instructions), sizeof(instructions) - sizeof(strlen(instructions)), "%d*d",child_ndx + 1); // delete node
+        snprintf(instructions + strlen(instructions), sizeof(instructions) - sizeof(strlen(instructions)), "%d*d,",child_ndx + 1); // delete node
 		if (right_Sibiling->getFull()) { this->splitNode(right_Sibiling); }
 		if (parent->size() < _middle) { this->mergeNodes(parent); }
 	}
@@ -544,7 +544,7 @@ int BTree::mergeLeafNodes(BTreeNode* node)
 				right_Sibiling->insertKey(key);
 			}
 			parent->removeChild(child_ndx);
-			snprintf(instructions + strlen(instructions), sizeof(instructions) - sizeof(strlen(instructions)), "%d*d",child_ndx + 1); // delete node
+            snprintf(instructions + strlen(instructions), sizeof(instructions) - sizeof(strlen(instructions)), "%d*d,",child_ndx + 1); // delete node
 			if (right_Sibiling->getFull()) { this->splitNode(right_Sibiling); }
 			if (parent->size() < _middle) { this->mergeNodes(parent); }
 		}
@@ -559,7 +559,7 @@ int BTree::mergeLeafNodes(BTreeNode* node)
 				left_Sibiling->insertKey(key);
 			}
 			parent->removeChild(child_ndx);
-			snprintf(instructions + strlen(instructions), sizeof(instructions) - sizeof(strlen(instructions)), "%d*d",child_ndx + 1); // delete node
+            snprintf(instructions + strlen(instructions), sizeof(instructions) - sizeof(strlen(instructions)), "%d*d,",child_ndx + 1); // delete node
 			if (left_Sibiling->getFull()) { this->splitNode(left_Sibiling); }
 			if (parent->size() < _middle) { this->mergeNodes(parent); }
 		}

@@ -96,10 +96,16 @@ private slots:
 
     void on_find_button_clicked();
 
+    void getInstructionVector();
+
     //void wheelEvent(QWheelEvent *event);
 
 
 
+
+    void on_step_forward_button_clicked();
+
+    void on_step_back_button_clicked();
 
 private:
     Ui::MainWindow *ui;

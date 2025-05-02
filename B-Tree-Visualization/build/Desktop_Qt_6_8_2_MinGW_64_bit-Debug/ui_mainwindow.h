@@ -160,7 +160,7 @@ public:
         horizontalLayout_2->setObjectName("horizontalLayout_2");
         groupBox = new QGroupBox(centralwidget);
         groupBox->setObjectName("groupBox");
-        groupBox->setGeometry(QRect(9, 564, 891, 29));
+        groupBox->setGeometry(QRect(9, 512, 891, 81));
         horizontalLayout_5 = new QHBoxLayout(groupBox);
         horizontalLayout_5->setObjectName("horizontalLayout_5");
         skip_back_button = new QPushButton(groupBox);

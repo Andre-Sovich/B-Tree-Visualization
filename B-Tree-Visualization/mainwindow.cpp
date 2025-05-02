@@ -40,7 +40,9 @@ std::string intStr = "";// temporary string for ints
 std::string keyStr = "";// key string
 std::string indStr = "";// index string
 std::string refStr = "";// reference key
+vector<std::string> instructions;
 std::string logStr = "";
+int instInd = 0;
 bool showIndex = false;
 QMap<std::string, QGroupBox *> nodeMap;
 QSequentialAnimationGroup animSeq;
@@ -59,10 +61,18 @@ void MainWindow::on_insert_button_clicked()
     if(isNumber(string)){
         if(tree_identifier == 1){
             //B Tree insert
+            clearDisplay();
+            std::string temp = "";
+            for (int i = 0; i < instructions.size(); i ++) {
+                qDebug("%s\n", temp.c_str());
+                temp += instructions[i];}
+            runAnimationString(temp);
             b_tree->insert(ui->input_textbox->text().toInt());
+            getInstructionVector();
             runAnimationString(b_tree->getCurrentInstructions());
             queue<BTreeNode*> queue = b_tree->treeToQueue();
             QString instructions(b_tree->getCurrentInstructions());
+
         }
 
         if(tree_identifier == 2){   // B+ Insert
@@ -89,6 +99,9 @@ void MainWindow::on_btree_radio_button_clicked()
     tree_identifier = 1;
     resetTrees();
     clearDisplay();
+    ui->message_display_textedit->setPlainText("");
+    logStr = "";
+    instructions.clear();
 }
 
 
@@ -97,6 +110,9 @@ void MainWindow::on_bplus_radio_button_clicked()
     tree_identifier = 2;
     resetTrees();
     clearDisplay();
+    ui->message_display_textedit->setPlainText("");
+    logStr = "";
+    instructions.clear();
 }
 
 
@@ -105,6 +121,9 @@ void MainWindow::on_bstar_radio_button_clicked()
     tree_identifier = 3;
     resetTrees();
     clearDisplay();
+    ui->message_display_textedit->setPlainText("");
+    logStr = "";
+    instructions.clear();
 }
 
 
@@ -114,8 +133,8 @@ void MainWindow::on_delete_button_clicked()
         if(tree_identifier == 1){
             //B Tree Remove
             b_tree->remove(ui->input_textbox->text().toInt());
+            getInstructionVector();
             queue<BTreeNode*> queue = b_tree->treeToQueue();
-            QString instructions(b_tree->getCurrentInstructions());
         }
 
         if(tree_identifier == 2){   // B+ Remove
@@ -138,6 +157,7 @@ void MainWindow::on_clear_button_clicked()
     clearDisplay();
     ui->message_display_textedit->setPlainText("");
     logStr = "";
+    instructions.clear();
 }
 
 void MainWindow::max_degree_combo_index_changed(int index)
@@ -145,6 +165,9 @@ void MainWindow::max_degree_combo_index_changed(int index)
     max_degree = index + 3;
     resetTrees();
     clearDisplay();
+    ui->message_display_textedit->setPlainText("");
+    logStr = "";
+    instructions.clear();
 }
 
 
@@ -243,21 +266,15 @@ void MainWindow::wheelEvent(QWheelEvent * event){
 void MainWindow::createKey(std::string key){
     // create new key
     QLabel * Qkey = new QLabel(ui->centralwidget);
-    Qkey->setGeometry(340,110, 0, 0);
+    Qkey->setGeometry(340,110, 50, 25);
     Qkey->setText(QString::fromStdString(key));
     QFont font = QFont();
     font.setPointSize(10);
     Qkey->setFont(font);
-    // animate tree tile
-    animation = new QPropertyAnimation(Qkey, "geometry");
-    animation->setDuration(250);
-    animation->setStartValue(Qkey->geometry());
-    animation->setEndValue(QRect(0,0,25,50));
 
     // place key in spawn node
     ui->spawnNode->layout()->addWidget(Qkey);
     ui->spawnNode->show();
-    animation->start();
     Qkey->show();
     ui->spawnNode->show();
 
@@ -285,7 +302,7 @@ void MainWindow::createNode(std::string index) {
  * Follows: %d.%d*%d*g
    Line: "Key %d was moved from node %d to %d"*/
 void MainWindow::gotoNode(std::string curIndex, std::string newIndex, std::string key){
-    qDebug("Go To Node:\n\tCurrent Index: %s\n\tNew Index: %s\n\tKey:%s",curIndex.c_str(),newIndex.c_str(),key.c_str());
+    //qDebug("Go To Node:\n\tCurrent Index: %s\n\tNew Index: %s\n\tKey:%s",curIndex.c_str(),newIndex.c_str(),key.c_str());
     QGroupBox * curNode;
     // check if newIndex is empty
     if (newIndex == ""){
@@ -296,15 +313,15 @@ void MainWindow::gotoNode(std::string curIndex, std::string newIndex, std::strin
     else curNode = nodeMap.find(curIndex).value();
     // check that both newIndex exist
     if (!nodeMap.contains(newIndex)){ createNode(newIndex);
-        qDebug("\tGenerating Node for %s", newIndex.c_str());
+        //qDebug("\tGenerating Node for %s", newIndex.c_str());
     }
 
     // get node to place tile in
     QGroupBox * newNode = nodeMap.find(newIndex).value();
     // get key
-    qDebug("Current Index: %s\nCurrent Exists: %s",curIndex.c_str(),(nodeMap.contains(curIndex)) ? "1" : "0");
+    //qDebug("Current Index: %s\nCurrent Exists: %s",curIndex.c_str(),(nodeMap.contains(curIndex)) ? "1" : "0");
     QList<QLabel *> keys = curNode->findChildren<QLabel *>();
-    qDebug("test");
+    //qDebug("test");
     QLabel * keyRef = NULL;
     for (auto it : keys){
         QLabel* currentLabel = it;
@@ -498,7 +515,7 @@ void MainWindow::respaceNodes() {
  * Line: split node
  * NOTE: call BEFORE the index is changed in BTree->splitnode*/
 void MainWindow::splitNode(std::string index) {
-    qDebug("Splitting node %s", index.c_str());
+    //qDebug("Splitting node %s", index.c_str());
     // Extract parent path
     size_t lastSlash = index.find_last_of('/');
     std::string parentPath = (lastSlash != std::string::npos) ?
@@ -520,19 +537,20 @@ void MainWindow::splitNode(std::string index) {
     // Renumber existing nodes
     QMap<std::string, QGroupBox*> newMap;
     for (auto [key, node] : nodeMap.asKeyValueRange()) {
-        qDebug("\tCurrent Key: %s", key.c_str());
+        //qDebug("\tCurrent Key: %s", key.c_str());
         if (index == key) {
             if (parentPath == ""){
                 newMap["0/" + key] = node;
-                qDebug("\tNew Key: 0/%s\n", key.c_str());
+                //qDebug("\tNew Key: 0/%s\n", key.c_str());
             }
             else {
                 newMap[key] = node;
-                qDebug("\tNew Key: %s\n", key.c_str());}
+                //qDebug("\tNew Key: %s\n", key.c_str());
+            }
         }
         // Check if Child
         else if (key.find(index) == 0) {
-            qDebug("\tChild of node");
+            //qDebug("\tChild of node");
             std::string newKey = parentPath;
             if (newKey == "") newKey += "0/";
             else newKey += "/";
@@ -551,10 +569,10 @@ void MainWindow::splitNode(std::string index) {
             }
             else newKey += std::to_string(stoi(pureIndex) + 1) + "/" + std::to_string(stoi(midKey) - midway) + endKey;
             newMap[newKey] = node;
-            qDebug("\tNew Key: %s\n\tMid Key: %s\n\tEnd Key: %s\n", newKey.c_str(), midKey.c_str(),endKey.c_str());
+            //qDebug("\tNew Key: %s\n\tMid Key: %s\n\tEnd Key: %s\n", newKey.c_str(), midKey.c_str(),endKey.c_str());
         // Check if Sibling or Niece
         } else if (key.find(parentPath) == 0 && key.length() != parentPath.length()) {
-            qDebug("\tSibling of node");
+            //qDebug("\tSibling of node");
             std::string midKey = key.substr(parentPath.length() + 1);
             std::string endKey = midKey;
             // Check if Niece
@@ -572,10 +590,10 @@ void MainWindow::splitNode(std::string index) {
             }
             else newKey += std::to_string(stoi(midKey) + 1) + endKey;
             newMap[newKey] = node;
-            qDebug("\tNew Key: %s\n", newKey.c_str());
+            //qDebug("\tNew Key: %s\n", newKey.c_str());
         } else {
             newMap[key] = node;
-            qDebug("\tNew Key: %s\n", key.c_str());
+            //qDebug("\tNew Key: %s\n", key.c_str());
         }
     }
 
@@ -653,12 +671,14 @@ void MainWindow::callAnimation(char c){
         break;
     case '*': // New int
         if(indStr == "") {
-            qDebug("Setting Index to %s\n",intStr.c_str());
+            //qDebug("Setting Index to %s\n",intStr.c_str());
             indStr = intStr;}
         else {
-            qDebug("Setting Reference Index to %s\n",intStr.c_str());
+            //qDebug("Setting Reference Index to %s\n",intStr.c_str());
             refStr = intStr;}
         intStr = "";
+        break;
+    case ',':
         break;
     default:
         // check if its a digit for a key
@@ -670,3 +690,46 @@ void MainWindow::callAnimation(char c){
 void MainWindow::displayInstr(std::string instructions){
     ui->message_display_textedit->setPlainText(QString::fromStdString(instructions));
 }
+
+void MainWindow::getInstructionVector(){
+    qDebug("%s", b_tree->getCurrentInstructions());
+    std::string fullInstr = b_tree->getCurrentInstructions();
+    std::string partInstr = "";
+    for(char& c: fullInstr){
+        qDebug("%c",c);
+        if(c == ','){
+            qDebug("%s", partInstr.c_str());
+            instructions.push_back(partInstr);
+            partInstr = "";
+        } else partInstr += c;
+    }
+
+}
+
+void MainWindow::on_step_forward_button_clicked()
+{
+    if (instructions.empty()) getInstructionVector();
+    if (instructions.empty()) return;
+    instInd ++;
+    if (instInd >= instructions.size()) instInd = 0;
+    clearDisplay();
+    std::string tempInst = "";
+    for (int i = 0; i <= instInd; i ++) tempInst += instructions[i];
+    qDebug("%s", tempInst.c_str());
+    runAnimationString(tempInst);
+
+}
+
+void MainWindow::on_step_back_button_clicked()
+{
+    if (instructions.empty()) getInstructionVector();
+    if (instructions.empty()) return;
+    instInd --;
+    if (instInd < 0) instInd = instructions.size() - 1;
+    clearDisplay();
+    std::string tempInst = "";
+    for (int i = 0; i <= instInd; i ++) tempInst += instructions[i];
+    qDebug("%s", tempInst.c_str());
+    runAnimationString(tempInst);
+}
+
