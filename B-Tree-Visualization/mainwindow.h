@@ -13,6 +13,7 @@
 #include <BStarTree.hh>
 #include <BTree.h>
 #include <QPropertyAnimation>
+#include <QGraphicsLineItem>
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -89,15 +90,11 @@ private slots:
 
     bool isNumber(std::string string);
 
-    void displayTreeFromQueue(queue<BPlusTreeNode*> q);
-    void displayTreeFromQueueFind(queue<BTreeNode*> q, int find_value);
-    void displayTreeFromQueueFind(queue<BPlusTreeNode*> q, int find_value);
 
-    void displayTreeFromQueue(queue<BTreeNode*> q);
 
     void on_find_button_clicked();
 
-    void wheelEvent(QWheelEvent *event);
+    //void wheelEvent(QWheelEvent *event);
 
 
 

@@ -3,6 +3,7 @@
 #include <string>
 #include <QTimer>
 #include <QHash>
+#include <QGroupBox>
 
 
 
@@ -31,7 +32,7 @@ MainWindow::MainWindow(QWidget *parent)
         this, &MainWindow::runAnimationString);
 }
 //global variables
-std::string instrStr = "12.a12.0.c12.0.l"; //instruction string
+std::string instrStr = "12.a"; //instruction string
 std::string intStr = "";// temporary string for ints
 std::string keyStr = "";// key string
 std::string refStr = "";// reference key
@@ -40,25 +41,32 @@ QHash<std::string,QPushButton *> treeHash;
 QSequentialAnimationGroup animSeq;
 
 
+
 MainWindow::~MainWindow()
 {
 }
 
 void MainWindow::onAddTreeNode(std::string key){
 
-    QPushButton * tile = new QPushButton(ui->centralwidget);
+    QGroupBox * Qnode = new QGroupBox(ui->centralwidget);
+    QHBoxLayout *hbox = new QHBoxLayout(Qnode);
+    // set color
+    QPalette p = Qnode->palette();
+    p.setColor(QPalette::Window, Qt::lightGray);
+    Qnode->setPalette(p);
+    Qnode->setAutoFillBackground(true);
     // create new tree node
-    tile->setGeometry(340,110, 0, 0);
-    tile->setText(QString::fromStdString(key));
+    Qnode->setGeometry(340,110, 0, 0);
+    //tile->setText(QString::fromStdString(key));
     // add to hash map
-    treeHash[key] = tile;
+    //treeHash[key] = tile;
     // animate tree node
-    animation = new QPropertyAnimation(tile, "geometry");
+    animation = new QPropertyAnimation(Qnode, "geometry");
     animation->setDuration(250);
-    animation->setStartValue(tile->geometry());
+    animation->setStartValue(Qnode->geometry());
     animation->setEndValue(QRect(340,110,50,50));
     animation->start();
-    tile->show();
+    Qnode->show();
 }
 
 void MainWindow::onCompareTreeNodes(std::string key,std::string refKey){

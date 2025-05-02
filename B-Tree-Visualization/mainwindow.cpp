@@ -9,13 +9,13 @@
 #include <QMap>
 #include <QSequentialAnimationGroup>
 #include <QLayout>
+#include <vector>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-    ui->graphicsView->setScene(&scene);
 
 
     connect(ui->comboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(max_degree_combo_index_changed(int)));
@@ -39,9 +39,11 @@ std::string intStr = "";// temporary string for ints
 std::string keyStr = "";// key string
 std::string indStr = "";// index string
 std::string refStr = "";// reference key
-bool setRef = false; // reference set
+bool showIndex = false;
 QMap<std::string, QGroupBox *> nodeMap;
 QSequentialAnimationGroup animSeq;
+std::vector<QGraphicsItemGroup*> displayItems;
+QList<QLabel *> connectionLines;
 
 MainWindow::~MainWindow()
 {
@@ -57,27 +59,21 @@ void MainWindow::on_insert_button_clicked()
             //B Tree insert
             b_tree->insert(ui->input_textbox->text().toInt());
             runAnimationString(b_tree->getCurrentInstructions());
-            clearDisplay();
             queue<BTreeNode*> queue = b_tree->treeToQueue();
-            displayTreeFromQueue(queue);
             QString instructions(b_tree->getCurrentInstructions());
             ui->message_display_textedit->setPlainText(instructions);
         }
 
         if(tree_identifier == 2){   // B+ Insert
             bplus_tree->insert(ui->input_textbox->text().toInt());
-            clearDisplay();
             queue<BPlusTreeNode*> queue = bplus_tree->treeToQueue();
-            displayTreeFromQueue(queue);
             QString instructions(bplus_tree->getCurrentInstructions());
             ui->message_display_textedit->setPlainText(instructions);
         }
 
         if(tree_identifier == 3){   // B* Insert
             bstar_tree->insert(ui->input_textbox->text().toInt());
-            clearDisplay();
             queue<BPlusTreeNode*> queue = bstar_tree->treeToQueue();
-            displayTreeFromQueue(queue);
             QString instructions(bstar_tree->getCurrentInstructions());
             ui->message_display_textedit->setPlainText(instructions);
         }
@@ -119,27 +115,21 @@ void MainWindow::on_delete_button_clicked()
         if(tree_identifier == 1){
             //B Tree Remove
             b_tree->remove(ui->input_textbox->text().toInt());
-            clearDisplay();
             queue<BTreeNode*> queue = b_tree->treeToQueue();
-            displayTreeFromQueue(queue);
             QString instructions(b_tree->getCurrentInstructions());
             ui->message_display_textedit->setPlainText(instructions);
         }
 
         if(tree_identifier == 2){   // B+ Remove
             bplus_tree->remove(ui->input_textbox->text().toInt());
-            clearDisplay();
             queue<BPlusTreeNode*> queue = bplus_tree->treeToQueue();
-            displayTreeFromQueue(queue);
             QString instructions(bplus_tree->getCurrentInstructions());
             ui->message_display_textedit->setPlainText(instructions);
         }
 
         if(tree_identifier == 3){   // B* Remove
             bstar_tree->remove(ui->input_textbox->text().toInt());
-            clearDisplay();
             queue<BPlusTreeNode*> queue = bstar_tree->treeToQueue();
-            displayTreeFromQueue(queue);
             QString instructions(bstar_tree->getCurrentInstructions());
             ui->message_display_textedit->setPlainText(instructions);
         }
@@ -150,8 +140,6 @@ void MainWindow::on_clear_button_clicked()
 {
     resetTrees();
     clearDisplay();
-    ui->graphicsView->resetTransform();
-    ui->graphicsView->centerOn(0, 0);
     ui->message_display_textedit->setPlainText("");
 }
 
@@ -177,10 +165,11 @@ void MainWindow::resetTrees() {
 
 void MainWindow::clearDisplay()
 {
-    while(displayItems.size() > 0) {
-        displayItems.pop_back();
+    for (auto [key, node] : nodeMap.asKeyValueRange()){
+        delete node;
     }
-    scene.clear();
+    QMap<std::string, QGroupBox *> tempMap;
+    nodeMap = tempMap;
 }
 
 bool MainWindow::isNumber(std::string s){
@@ -191,552 +180,6 @@ bool MainWindow::isNumber(std::string s){
     return !s.empty() && it == s.end();
 }
 
-void MainWindow::displayTreeFromQueue(queue<BPlusTreeNode*> q) {
-    BPlusTreeNode* currentNode = nullptr;
-    BPlusTreeNode* oldParent = nullptr;
-    int oldHeight = 0;
-    int currentY = 0;
-    int minX = 0;
-    int maxX = 0;
-    int currentDx = 0;
-    int currentX = 0;
-    int rectWidth = 50 * (max_degree - 1);
-    int rectHeight = 25;
-    int gapSize = 25;
-    int layerLevel = 0;
-    int height = -1;
-    int parentIndex = 0;
-    int childIndex = 0;
-    int currentParentDx = 0;
-    int parentLength = 0;
-    vector<int> prevXs;
-    vector<int> currentXs;
-
-    while (!q.empty()) {
-        currentNode = q.front();
-        q.pop();
-        if(currentNode->getKeys()->size() <= 0) {
-            break;
-        }
-        if(height == -1) {
-            height = currentNode->getHeight();
-            oldHeight = currentNode->getHeight();
-            minX = -1 * (((pow(max_degree, height) - 1) * (rectWidth + gapSize)) / 2);
-            maxX = (((pow(max_degree, height) - 1) * (rectWidth + gapSize)) / 2);
-        }
-
-        // Creates the rectangle to display
-        QGraphicsRectItem* item = new QGraphicsRectItem(0,0,rectWidth,rectHeight);
-        QColor* roaring_light_grey = new QColor(230, 231, 232);
-        item->setBrush(*roaring_light_grey);
-
-        // Create text for the node
-        char output[1024] = {};
-        for (int i = 0; i < (int)currentNode->getKeys()->size(); i++) {
-            snprintf(output + strlen(output), sizeof(output), "%d", (*(currentNode->getKeys()))[i]);
-            if (i != (int)currentNode->getKeys()->size() - 1) {
-                snprintf(output + strlen(output), sizeof(output), " | ");
-            }
-        }
-
-        snprintf(output + strlen(output), sizeof(output), "ID:%d", currentNode->getHeight());
-
-        QString* text = new QString(output);
-        QGraphicsTextItem* text_item = new QGraphicsTextItem(*text);
-        text_item->setDefaultTextColor(Qt::black);
-
-        // Centers the text within the rectangle
-        qreal textXPos = (rectWidth / 2) - (text_item->boundingRect().width() / 2);
-        text_item->setPos(textXPos, 0);
-
-        // Group the rectangle and text together
-        QList<QGraphicsItem*>* nodeComponents = new QList<QGraphicsItem*>({item, text_item});
-        QGraphicsItemGroup* node = scene.createItemGroup(*nodeComponents);
-
-        // Add to the scene and record the position
-        displayItems.push_back(node);
-
-        if (oldHeight != currentNode->getHeight()) {
-            layerLevel++;
-            oldHeight = currentNode->getHeight();
-            currentY = (layerLevel * rectHeight) + (layerLevel * gapSize);
-            currentDx = ((pow(max_degree, height) * (rectWidth + gapSize)) / pow(max_degree, layerLevel));
-            currentX = minX + (((maxX - minX) % currentDx) / 2);
-
-            // Updating the parent references.
-            oldParent = currentNode->getParent();
-
-            // Swap prevXs and currentXs since we're in a new layer of the tree
-            prevXs.swap(currentXs);
-
-            // Clear currentXs
-            currentXs.clear();
-
-            // Reset parent and child index for new layer
-            parentIndex = 0;
-            childIndex = 0;
-
-            parentLength = ((((max_degree - 1) - (max_degree / 2)) * currentDx) + prevXs[parentIndex]) - (((-1 * (max_degree / 2)) * currentDx) + prevXs[parentIndex]) + rectWidth;
-            currentParentDx = (parentLength - (oldParent->getChildren()->size() * rectWidth)) / (oldParent->getChildren()->size() - 1);
-        }
-
-        if(oldParent && childIndex < oldParent->getChildren()->size()) {
-            if(childIndex == 0) {
-                currentX = ((childIndex - (max_degree / 2)) * currentDx) + prevXs[parentIndex];
-            }
-            if(childIndex != 0) {
-                currentX += currentParentDx + rectWidth;
-            }
-
-            childIndex++;
-        } else if (oldParent != currentNode->getParent()) {
-            oldParent = currentNode->getParent();
-            parentIndex++;
-            currentParentDx = (parentLength - (oldParent->getChildren()->size() * rectWidth)) / (oldParent->getChildren()->size() - 1);
-            currentX = ((-1 * (max_degree / 2)) * currentDx) + prevXs[parentIndex];
-            childIndex = 1;
-        }
-
-        // Set node position
-        node->setPos(currentX, currentY);
-        currentXs.push_back(currentX);
-
-        // Draw a line from the bottom center of the parent node to the top center of this node
-        if (oldParent) {
-            int parentX = prevXs[parentIndex];
-            int parentY = currentY - (rectHeight + gapSize);
-
-            // Adjust positions for bottom of the parent and top of the child
-            int parentBottomX = parentX + rectWidth / 2;
-            int parentBottomY = parentY + rectHeight;
-            int childTopX = currentX + rectWidth / 2;
-            int childTopY = currentY;
-
-            // Create a QPen with a bolder line width
-            QPen pen(Qt::black);
-            pen.setWidth(2);
-
-            scene.addLine(parentBottomX, parentBottomY, childTopX, childTopY, pen);
-        }
-    }
-}
-
-void MainWindow::displayTreeFromQueueFind(queue<BPlusTreeNode*> q, int find_value) {
-    BPlusTreeNode* currentNode = nullptr;
-    BPlusTreeNode* oldParent = nullptr;
-    int oldHeight = 0;
-    int currentY = 0;
-    int minX = 0;
-    int maxX = 0;
-    int currentDx = 0;
-    int currentX = 0;
-    int rectWidth = 50 * (max_degree - 1);
-    int rectHeight = 25;
-    int gapSize = 25;
-    int layerLevel = 0;
-    int height = -1;
-    int parentIndex = 0;
-    int childIndex = 0;
-    int currentParentDx = 0;
-    int parentLength = 0;
-    vector<int> prevXs;
-    vector<int> currentXs;
-    while(q.size() > 0) {
-        currentNode = q.front();
-        q.pop();
-        if(currentNode->getKeys()->size() <= 0) {
-            break;
-        }
-        if(height == -1) {
-            height = currentNode->getHeight();
-            oldHeight = currentNode->getHeight();
-            minX = -1 * (((pow(max_degree, height) - 1) * (rectWidth + gapSize)) / 2);
-            maxX = (((pow(max_degree, height) - 1) * (rectWidth + gapSize)) / 2);
-        }
-
-        // Creates the rectangle to display
-        QGraphicsRectItem* item = new QGraphicsRectItem(0,0,rectWidth,rectHeight);
-        QColor* roaring_light_grey = new QColor(230, 231, 232);
-        item->setBrush(*roaring_light_grey);
-
-        // Creates the text to display within the rectangle
-        char output[1024] = {};
-        for(int i = 0; i < (int)currentNode->getKeys()->size(); i++) {
-            snprintf(output + strlen(output), sizeof(output), "%d", (*(currentNode->getKeys()))[i]);
-            if(i != (int)currentNode->getKeys()->size() - 1) {
-                snprintf(output + strlen(output), sizeof(output), " | ");
-            }
-        }
-
-        snprintf(output + strlen(output), sizeof(output), "ID:%d", currentNode->getHeight());
-
-        // Creates the visual text item from the text
-        QString* text = new QString(output);
-        QGraphicsTextItem* text_item = new QGraphicsTextItem(*text);
-        text_item->setDefaultTextColor(Qt::black);
-
-        // Centers the text within the rectangle
-        qreal textXPos = (rectWidth / 2) - (text_item->boundingRect().width() / 2);
-        text_item->setPos(textXPos, 0);
-
-        if(currentNode->getIsLeaf() && currentNode->keyExists(find_value)){
-            QColor* roarange = new QColor(244, 121, 32);
-            item->setBrush(*roarange);
-        }
-
-        // Groups the rectangle and text together
-        QList<QGraphicsItem*>* nodeComponents = new QList<QGraphicsItem*>({item, text_item});
-        QGraphicsItemGroup* node = scene.createItemGroup(*nodeComponents);
-
-        // Adds the grouping and our display items
-        displayItems.push_back(node);
-
-
-        if(oldHeight != currentNode->getHeight()) {
-            // Increase layer level, since we've gone down a layer in the tree
-            layerLevel++;
-            oldHeight = currentNode->getHeight();
-
-            // Calculate the new Y coordinate for the new layer
-            currentY = (layerLevel * rectHeight) + (layerLevel * gapSize);
-
-            // Calculate the difference between nodes for the current layer.
-            // ((k^h) * (w + g)) / (k^l)
-            currentDx = ((pow(max_degree, height) * (rectWidth + gapSize)) / pow(max_degree, layerLevel));
-
-            // Calculate the furthest left node's placement. DOUBLE CHECK THIS
-            currentX = minX + (((maxX - minX) % currentDx) / 2);
-
-            // Updating the parent references.
-            oldParent = currentNode->getParent();
-
-            // Swap prevXs and currentXs since we're in a new layer of the tree
-            prevXs.swap(currentXs);
-
-            // Clear currentXs
-            currentXs.clear();
-
-            // Reset parent and child index for new layer
-            parentIndex = 0;
-            childIndex = 0;
-
-            parentLength = ((((max_degree - 1) - (max_degree / 2)) * currentDx) + prevXs[parentIndex]) - (((-1 * (max_degree / 2)) * currentDx) + prevXs[parentIndex]) + rectWidth;
-            currentParentDx = (parentLength - (oldParent->getChildren()->size() * rectWidth)) / (oldParent->getChildren()->size() - 1);
-        }
-        if(oldParent && childIndex < oldParent->getChildren()->size()) {
-            if(childIndex == 0) {
-                currentX = ((childIndex - (max_degree / 2)) * currentDx) + prevXs[parentIndex];
-            }
-            if(childIndex != 0) {
-                currentX += currentParentDx + rectWidth;
-            }
-            childIndex++;
-        } else if(oldParent != currentNode->getParent()) {
-            oldParent = currentNode->getParent();
-            parentIndex++;
-            currentParentDx = (parentLength - (oldParent->getChildren()->size() * rectWidth)) / (oldParent->getChildren()->size() - 1);
-            currentX = ((-1 * (max_degree / 2)) * currentDx) + prevXs[parentIndex];
-            childIndex = 1;
-        }
-
-        node->setPos(currentX, currentY);
-        currentXs.push_back(currentX);
-
-        // Draw a line from the bottom center of the parent node to the top center of this node
-        if (oldParent) {
-            int parentX = prevXs[parentIndex];
-            int parentY = currentY - (rectHeight + gapSize);
-
-            // Adjust positions for bottom of the parent and top of the child
-            int parentBottomX = parentX + rectWidth / 2;
-            int parentBottomY = parentY + rectHeight;
-            int childTopX = currentX + rectWidth / 2;
-            int childTopY = currentY;
-
-            // Create a QPen with a bolder line width
-            QPen pen(Qt::black);
-            pen.setWidth(2);
-
-            scene.addLine(parentBottomX, parentBottomY, childTopX, childTopY, pen);
-        }
-    }
-}
-
-void MainWindow::displayTreeFromQueue(queue<BTreeNode*> q) {
-    BTreeNode* currentNode = nullptr;
-    BTreeNode* oldParent = nullptr;
-    int oldHeight = 0;
-    int currentY = 0;
-    int minX = 0;
-    int maxX = 0;
-    int currentDx = 0;
-    int currentX = 0;
-    int rectWidth = 50 * (max_degree - 1);
-    int rectHeight = 25;
-    int gapSize = 25;
-    int layerLevel = 0;
-    int height = -1;
-    int parentIndex = 0;
-    int childIndex = 0;
-    int currentParentDx = 0;
-    int parentLength = 0;
-    vector<int> prevXs;
-    vector<int> currentXs;
-    while(q.size() > 0) {
-        currentNode = q.front();
-        q.pop();
-        if(currentNode->getKeys().size() <= 0) {
-            break;
-        }
-        if(height == -1) {
-            height = currentNode->getHeight();
-            oldHeight = currentNode->getHeight();
-            minX = -1 * (((pow(max_degree, height) - 1) * (rectWidth + gapSize)) / 2);
-            maxX = (((pow(max_degree, height) - 1) * (rectWidth + gapSize)) / 2);
-        }
-
-        // Creates the rectangle to display
-        QGraphicsRectItem* item = new QGraphicsRectItem(0,0,rectWidth,rectHeight);
-        QColor* roaring_light_grey = new QColor(230, 231, 232);
-        item->setBrush(*roaring_light_grey);
-
-        // Creates the text to display within the rectangle
-        char output[1024] = {};
-        for(int i = 0; i < (int)currentNode->getKeys().size(); i++) {
-            snprintf(output + strlen(output), sizeof(output), "%d", (currentNode->getKeys())[i]);
-            if(i != (int)currentNode->getKeys().size() - 1) {
-                snprintf(output + strlen(output), sizeof(output), " | ");
-            }
-        }
-
-        snprintf(output + strlen(output), sizeof(output), "ID:%s",currentNode->getId().c_str());
-
-        // Creates the visual text item from the text
-        QString* text = new QString(output);
-        QGraphicsTextItem* text_item = new QGraphicsTextItem(*text);
-        text_item->setDefaultTextColor(Qt::black);
-
-        // Centers the text within the rectangle
-        qreal textXPos = (rectWidth / 2) - (text_item->boundingRect().width() / 2);
-        text_item->setPos(textXPos, 0);
-
-        // Groups the rectangle and text together
-        QList<QGraphicsItem*>* nodeComponents = new QList<QGraphicsItem*>({item, text_item});
-        QGraphicsItemGroup* node = scene.createItemGroup(*nodeComponents);
-
-        // Adds the grouping and our display items
-        displayItems.push_back(node);
-
-
-        if(oldHeight != currentNode->getHeight()) {
-            // Increase layer level, since we've gone down a layer in the tree
-            layerLevel++;
-            oldHeight = currentNode->getHeight();
-
-            // Calculate the new Y coordinate for the new layer
-            currentY = (layerLevel * rectHeight) + (layerLevel * gapSize);
-
-            // Calculate the difference between nodes for the current layer.
-            // ((k^h) * (w + g)) / (k^l)
-            currentDx = ((pow(max_degree, height) * (rectWidth + gapSize)) / pow(max_degree, layerLevel));
-
-            // Calculate the furthest left node's placement. DOUBLE CHECK THIS
-            currentX = minX + (((maxX - minX) % currentDx) / 2);
-
-            // Updating the parent references.
-            oldParent = currentNode->getParent();
-
-            // Swap prevXs and currentXs since we're in a new layer of the tree
-            prevXs.swap(currentXs);
-
-            // Clear currentXs
-            currentXs.clear();
-
-            // Reset parent and child index for new layer
-            parentIndex = 0;
-            childIndex = 0;
-
-            parentLength = ((((max_degree - 1) - (max_degree / 2)) * currentDx) + prevXs[parentIndex]) - (((-1 * (max_degree / 2)) * currentDx) + prevXs[parentIndex]) + rectWidth;
-            currentParentDx = (parentLength - (oldParent->getChildren()->size() * rectWidth)) / (oldParent->getChildren()->size() - 1);
-        }
-        if(oldParent && childIndex < oldParent->getChildren()->size()) {
-            if(childIndex == 0) {
-                currentX = ((childIndex - (max_degree / 2)) * currentDx) + prevXs[parentIndex];
-            }
-            if(childIndex != 0) {
-                currentX += currentParentDx + rectWidth;
-            }
-            childIndex++;
-        } else if(oldParent != currentNode->getParent()) {
-            oldParent = currentNode->getParent();
-            parentIndex++;
-            currentParentDx = (parentLength - (oldParent->getChildren()->size() * rectWidth)) / (oldParent->getChildren()->size() - 1);
-            currentX = ((-1 * (max_degree / 2)) * currentDx) + prevXs[parentIndex];
-            childIndex = 1;
-        }
-
-        node->setPos(currentX, currentY);
-        currentXs.push_back(currentX);
-
-        // Draw a line from the bottom center of the parent node to the top center of this node
-        if (oldParent) {
-            int parentX = prevXs[parentIndex];
-            int parentY = currentY - (rectHeight + gapSize);
-
-            // Adjust positions for bottom of the parent and top of the child
-            int parentBottomX = parentX + rectWidth / 2;
-            int parentBottomY = parentY + rectHeight;
-            int childTopX = currentX + rectWidth / 2;
-            int childTopY = currentY;
-
-            // Create a QPen with a bolder line width
-            QPen pen(Qt::black);
-            pen.setWidth(2);
-
-            scene.addLine(parentBottomX, parentBottomY, childTopX, childTopY, pen);
-        }
-    }
-}
-
-void MainWindow::displayTreeFromQueueFind(queue<BTreeNode*> q, int find_value) {
-    BTreeNode* currentNode = nullptr;
-    BTreeNode* oldParent = nullptr;
-    int oldHeight = 0;
-    int currentY = 0;
-    int minX = 0;
-    int maxX = 0;
-    int currentDx = 0;
-    int currentX = 0;
-    int rectWidth = 50 * (max_degree - 1);
-    int rectHeight = 25;
-    int gapSize = 25;
-    int layerLevel = 0;
-    int height = -1;
-    int parentIndex = 0;
-    int childIndex = 0;
-    int currentParentDx = 0;
-    int parentLength = 0;
-    vector<int> prevXs;
-    vector<int> currentXs;
-    while(q.size() > 0) {
-        currentNode = q.front();
-        q.pop();
-        if(currentNode->getKeys().size() <= 0) {
-            break;
-        }
-        if(height == -1) {
-            height = currentNode->getHeight();
-            oldHeight = currentNode->getHeight();
-            minX = -1 * (((pow(max_degree, height) - 1) * (rectWidth + gapSize)) / 2);
-            maxX = (((pow(max_degree, height) - 1) * (rectWidth + gapSize)) / 2);
-        }
-
-        // Creates the rectangle to display
-        QGraphicsRectItem* item = new QGraphicsRectItem(0,0,rectWidth,rectHeight);
-        QColor* roaring_light_grey = new QColor(230, 231, 232);
-        item->setBrush(*roaring_light_grey);
-
-        // Creates the text to display within the rectangle
-        char output[1024] = {};
-        for(int i = 0; i < (int)currentNode->getKeys().size(); i++) {
-            snprintf(output + strlen(output), sizeof(output), "%d", (currentNode->getKeys())[i]);
-            if(i != (int)currentNode->getKeys().size() - 1) {
-                snprintf(output + strlen(output), sizeof(output), " | ");
-            }
-        }
-        snprintf(output + strlen(output), sizeof(output), "ID:%s",currentNode->getId().c_str());
-
-        // Creates the visual text item from the text
-        QString* text = new QString(output);
-        QGraphicsTextItem* text_item = new QGraphicsTextItem(*text);
-        text_item->setDefaultTextColor(Qt::black);
-
-        // Centers the text within the rectangle
-        qreal textXPos = (rectWidth / 2) - (text_item->boundingRect().width() / 2);
-        text_item->setPos(textXPos, 0);
-
-        if(currentNode->keyExists(find_value)){
-            QColor* roarange = new QColor(244, 121, 32);
-            item->setBrush(*roarange);
-        }
-
-        // Groups the rectangle and text together
-        QList<QGraphicsItem*>* nodeComponents = new QList<QGraphicsItem*>({item, text_item});
-        QGraphicsItemGroup* node = scene.createItemGroup(*nodeComponents);
-
-        // Adds the grouping and our display items
-        displayItems.push_back(node);
-
-
-        if(oldHeight != currentNode->getHeight()) {
-            // Increase layer level, since we've gone down a layer in the tree
-            layerLevel++;
-            oldHeight = currentNode->getHeight();
-
-            // Calculate the new Y coordinate for the new layer
-            currentY = (layerLevel * rectHeight) + (layerLevel * gapSize);
-
-            // Calculate the difference between nodes for the current layer.
-            // ((k^h) * (w + g)) / (k^l)
-            currentDx = ((pow(max_degree, height) * (rectWidth + gapSize)) / pow(max_degree, layerLevel));
-
-            // Calculate the furthest left node's placement. DOUBLE CHECK THIS
-            currentX = minX + (((maxX - minX) % currentDx) / 2);
-
-            // Updating the parent references.
-            oldParent = currentNode->getParent();
-
-            // Swap prevXs and currentXs since we're in a new layer of the tree
-            prevXs.swap(currentXs);
-
-            // Clear currentXs
-            currentXs.clear();
-
-            // Reset parent and child index for new layer
-            parentIndex = 0;
-            childIndex = 0;
-
-            parentLength = ((((max_degree - 1) - (max_degree / 2)) * currentDx) + prevXs[parentIndex]) - (((-1 * (max_degree / 2)) * currentDx) + prevXs[parentIndex]) + rectWidth;
-            currentParentDx = (parentLength - (oldParent->getChildren()->size() * rectWidth)) / (oldParent->getChildren()->size() - 1);
-        }
-        if(oldParent && childIndex < oldParent->getChildren()->size()) {
-            if(childIndex == 0) {
-                currentX = ((childIndex - (max_degree / 2)) * currentDx) + prevXs[parentIndex];
-            }
-            if(childIndex != 0) {
-                currentX += currentParentDx + rectWidth;
-            }
-            childIndex++;
-        } else if(oldParent != currentNode->getParent()) {
-            oldParent = currentNode->getParent();
-            parentIndex++;
-            currentParentDx = (parentLength - (oldParent->getChildren()->size() * rectWidth)) / (oldParent->getChildren()->size() - 1);
-            currentX = ((-1 * (max_degree / 2)) * currentDx) + prevXs[parentIndex];
-            childIndex = 1;
-        }
-
-        node->setPos(currentX, currentY);
-        currentXs.push_back(currentX);
-
-        // Draw a line from the bottom center of the parent node to the top center of this node
-        if (oldParent) {
-            int parentX = prevXs[parentIndex];
-            int parentY = currentY - (rectHeight + gapSize);
-
-            // Adjust positions for bottom of the parent and top of the child
-            int parentBottomX = parentX + rectWidth / 2;
-            int parentBottomY = parentY + rectHeight;
-            int childTopX = currentX + rectWidth / 2;
-            int childTopY = currentY;
-
-            // Create a QPen with a bolder line width
-            QPen pen(Qt::black);
-            pen.setWidth(2);
-
-            scene.addLine(parentBottomX, parentBottomY, childTopX, childTopY, pen);
-        }
-    }
-}
 
 void MainWindow::on_find_button_clicked()
 {
@@ -744,28 +187,22 @@ void MainWindow::on_find_button_clicked()
         int findValue = ui->input_textbox->text().toInt();
 
         if(tree_identifier == 1){
-            clearDisplay();
             b_tree->findDeepestOccurance(findValue);
             queue<BTreeNode*> queue = b_tree->treeToQueue();
-            displayTreeFromQueueFind(queue, findValue);
             QString instructions(bplus_tree->getCurrentInstructions());
             ui->message_display_textedit->setPlainText(instructions);
         }
 
         if(tree_identifier == 2){   // B+
-            clearDisplay();
             bplus_tree->find(findValue);
             queue<BPlusTreeNode*> queue = bplus_tree->treeToQueue();
-            displayTreeFromQueueFind(queue, findValue);
             QString instructions(bplus_tree->getCurrentInstructions());
             ui->message_display_textedit->setPlainText(instructions);
         }
 
         if(tree_identifier == 3){   // B*
-            clearDisplay();
             bstar_tree->find(findValue);
             queue<BPlusTreeNode*> queue = bstar_tree->treeToQueue();
-            displayTreeFromQueueFind(queue, findValue);
             QString instructions(bstar_tree->getCurrentInstructions());
             ui->message_display_textedit->setPlainText(instructions);
         }
@@ -778,7 +215,7 @@ void MainWindow::on_find_button_clicked()
 /*
 * wheelEvent is used to zoom in and out of the graphicsView
 * using the mouse wheel or the trackpad
-*/
+
 void MainWindow::wheelEvent(QWheelEvent * event){
     ui->graphicsView->setTransformationAnchor(QGraphicsView::ViewportAnchor::AnchorUnderMouse);
     QGraphicsView::ViewportAnchor anchor = ui->graphicsView->transformationAnchor();
@@ -807,6 +244,7 @@ void MainWindow::wheelEvent(QWheelEvent * event){
         ui->graphicsView->setTransformationAnchor(anchor);  // sets the anchor
     }
 }
+*/
 
 /* labeled 'k'
  * Follows: %d.k
@@ -816,12 +254,14 @@ void MainWindow::createKey(std::string key){
     QLabel * Qkey = new QLabel(ui->centralwidget);
     Qkey->setGeometry(340,110, 0, 0);
     Qkey->setText(QString::fromStdString(key));
-
+    QFont font = QFont();
+    font.setPointSize(10);
+    Qkey->setFont(font);
     // animate tree tile
     animation = new QPropertyAnimation(Qkey, "geometry");
     animation->setDuration(250);
     animation->setStartValue(Qkey->geometry());
-    animation->setEndValue(QRect(10,26,131,36));
+    animation->setEndValue(QRect(0,0,25,50));
 
     // place key in spawn node
     ui->spawnNode->layout()->addWidget(Qkey);
@@ -834,57 +274,45 @@ void MainWindow::createKey(std::string key){
 /* labeled 'n'
  * Follows: %d*n
    Line: "Node %d created as child to node %d"*/
-void MainWindow::createNode(std::string index){
-    // create new node
-    QHBoxLayout *hbox = new QHBoxLayout(ui->centralwidget);
-    QGroupBox * Qnode = new QGroupBox(ui->centralwidget);
-    Qnode->setLayout(hbox);
-    Qnode->setGeometry(QRect(340,110, 0, 0));
+void MainWindow::createNode(std::string index) {
+    QGroupBox* Qnode = new QGroupBox(ui->centralwidget);
+    Qnode->setLayout(new QHBoxLayout());
 
-    // add to someway to keep track of nodes
+    // Set style
+    QPalette p = Qnode->palette();
+    p.setColor(QPalette::Window, Qt::lightGray);
+    Qnode->setPalette(p);
+    Qnode->setAutoFillBackground(true);
+
+    // Store in map
     nodeMap[index] = Qnode;
-
-    // animate tree tile
-    QPropertyAnimation animation = new QPropertyAnimation(Qnode, "geometry");
-    animation.setDuration(250);
-    animation.setStartValue(Qnode->geometry());
-    animation.setEndValue(QRect(340,110,5,50));
-    animation.start();
-    Qnode->show();
-
-    Qnode->setTitle("itSpawnedMe");
-    nodeMap.find(index).value()->title();
-    ui->spawnNode->setTitle(nodeMap.find(index).value()->title());
+    if(showIndex) Qnode->setTitle(QString::fromStdString("Node " + index));
 }
-/* labeled 'm'
- * Follows: %s(1)*%s(2)*m
- * Line "Node %s(1) was moved to be child of %s(2)"
- */
-void MainWindow::makeChild(std::string childIndex, std::string parentIndex){
-    // create line from 1st to 2nd
 
-    // move 2nd down to that tier
-
-    //
-}
 /* labeled 'g'
  * Follows: %d.%d*%d*g
    Line: "Key %d was moved from node %d to %d"*/
 void MainWindow::gotoNode(std::string curIndex, std::string newIndex, std::string key){
+    qDebug("Go To Node:\n\tCurrent Index: %s\n\tNew Index: %s\n\tKey:%s",curIndex.c_str(),newIndex.c_str(),key.c_str());
     QGroupBox * curNode;
     // check if newIndex is empty
     if (newIndex == ""){
-        // if it is, create 0th node
-        createNode(curIndex);
+        // if it is, swap new and current and set current to spawn
         newIndex = curIndex;
         curNode = ui->spawnNode;
     }
-    else{
-        curNode = nodeMap.find(curIndex).value();
+    else curNode = nodeMap.find(curIndex).value();
+    // check that both newIndex exist
+    if (!nodeMap.contains(newIndex)){ createNode(newIndex);
+        qDebug("\tGenerating Node for %s", newIndex.c_str());
     }
 
+    // get node to place tile in
+    QGroupBox * newNode = nodeMap.find(newIndex).value();
     // get key
+    qDebug("Current Index: %s\nCurrent Exists: %s",curIndex.c_str(),(nodeMap.contains(curIndex)) ? "1" : "0");
     QList<QLabel *> keys = curNode->findChildren<QLabel *>();
+    qDebug("test");
     QLabel * keyRef = NULL;
     for (auto it : keys){
         QLabel* currentLabel = it;
@@ -895,11 +323,7 @@ void MainWindow::gotoNode(std::string curIndex, std::string newIndex, std::strin
     }
     if(keyRef == NULL) return;
 
-    // get node to place tile in
-    QGroupBox * newNode = nodeMap.find(curIndex).value();
-
-    // move tile to node location
-
+    // move key to node location
     curNode->layout()->removeWidget(keyRef);
     newNode->layout()->addWidget(keyRef);
 
@@ -910,7 +334,6 @@ void MainWindow::gotoNode(std::string curIndex, std::string newIndex, std::strin
 
     // resize node
 }
-
 /* labeled 'c'
  * Follows: %d.%d.%d*t
    Line: "Key %d was moved to the (left/right) of %d in node %d"*/
@@ -995,85 +418,181 @@ void MainWindow::resizeNode(std::string index){
 /* labeled 'a'
  * Follows: a
    Line: "Respaced nodes"*/
-void MainWindow::respaceNodes(){
-    // Use QHash::key_iterator
-        // for each level, get key,
-        // if key is "0", skip
-        // if not, get key truncated (EX: 001->00)
-        // get truncated's position
-        // move current below truncated by factor x
-        // check if neighbor exists (EX: check if 002 exists)
-            // if it does,
-    // while index
+void MainWindow::respaceNodes() {
+    if (nodeMap.isEmpty()) return;
+    // Constants for layout
+    const int levelHeight = 100;  // Vertical space between levels
+    const int siblingSpacing = 50; // Horizontal space between siblings
+    const int nodeWidth = 100;
+    const int nodeHeight = 50;
+    const int startY = 100;
 
+    // First, organize nodes by their depth level
+    QMap<int, QList<QGroupBox*>> nodesByLevel;
+
+    for (auto [key, node] : nodeMap.asKeyValueRange()) {
+        // Count slashes to determine level depth
+        int level = std::count(key.begin(), key.end(), '/');
+
+        // Rename all nodes
+        if(showIndex) node->setTitle(QString::fromStdString(key));
+        nodesByLevel[level].append(node);
+    }
+
+    // Position nodes level by level from top to bottom
+    for (auto level : nodesByLevel.keys()) {
+        int yPos = startY + level * levelHeight;
+        QList<QGroupBox*> levelNodes = nodesByLevel[level];
+
+        // Calculate total width needed for this level
+        int totalWidth = levelNodes.size() * nodeWidth +
+                         (levelNodes.size() - 1) * siblingSpacing;
+
+        int startX = (ui->centralwidget->width() - totalWidth) / 2;
+
+        // Position each node in this level
+        for (int i = 0; i < levelNodes.size(); i++) {
+            QGroupBox* node = levelNodes[i];
+            node->setGeometry(startX + i * (nodeWidth + siblingSpacing),
+                              yPos,
+                              nodeWidth,
+                              nodeHeight);
+            node->show();
+        }
+    }
+
+    // Draw connections
+    for (auto [key, node] : nodeMap.asKeyValueRange()) {
+        std::string parentKey = key.substr(0, key.find_last_of('/'));
+        if (nodeMap.contains(parentKey)) {
+            QGroupBox* parent = nodeMap[parentKey];
+
+            QPoint parentBottom(parent->geometry().center().x(),
+                                parent->geometry().bottom());
+            QPoint childTop(node->geometry().center().x(),
+                            node->geometry().top());
+
+            // Create a line using a QLabel with a styled border
+            QLabel* line = new QLabel(ui->centralwidget);
+            line->setStyleSheet("background-color: black;");
+
+            // Calculate line position and size
+            if (parentBottom.x() == childTop.x()) {
+                // Vertical line
+                line->setGeometry(parentBottom.x() - 1, parentBottom.y(),
+                                  2, childTop.y() - parentBottom.y());
+            } else {
+                // Diagonal line - we'll approximate with small segments
+                int dx = childTop.x() - parentBottom.x();
+                int dy = childTop.y() - parentBottom.y();
+                double length = sqrt(dx*dx + dy*dy);
+                double angle = atan2(dy, dx);
+
+                // Create a straight horizontal line and rotate it via stylesheet
+                line->setGeometry(parentBottom.x(), parentBottom.y(),
+                                  length, 2);
+                line->setStyleSheet(QString(
+                                        "background-color: black;"
+                                        "border: none;"
+                                        "transform-origin: left center;"
+                                        "transform: rotate(%1rad);"
+                                        ).arg(angle));
+            }
+            line->show();
+            connectionLines.append(line);
+        }
+    }
 }
 /* labeled 's'
  * Follows: %s*s
  * Line: split node
  * NOTE: call BEFORE the index is changed in BTree->splitnode*/
-void MainWindow::splitNode(std::string index){
-    // get nodes parent (truncate index)
-    std::string pIndex = index;
-    std::string tIndex ("");
-    while (pIndex != ""){
-        if (pIndex[pIndex.length() - 1] != '/'){
-            tIndex.insert(0,1,pIndex[pIndex.length() - 1]);
-            pIndex.erase(pIndex.length());
-        }
-        else break;
-    }
-    // check if nodes parent is null (truncate == "")
-    if (pIndex == ""){
-        // if null, for each entry in map
-            //add 0 to the beginning
-        QMap<std::string, QGroupBox *> tempMap;
-        for (auto [key, value] : nodeMap.asKeyValueRange()) {
-            tempMap["0/" + key] = value;
-        }
-        nodeMap = tempMap;
-
-        // create new root node labeled "0"
-        createNode("0");
-        pIndex = "0";
-        // set index to "0/0"
-        index = "0/0";
-    }
-    // if parent not null
-    else {
-        std::string tempIndex = index;
-        int i = stoi(tIndex) + 1;
-        QMap<std::string, QGroupBox *> tempMap;
-        while(nodeMap.contains(pIndex + std::to_string(i))){
-        //for each node on the same level and to the right of index
-            // change index in map to index + 1 (Ex: "001" -> "002")
-            tempMap[pIndex + std::to_string(i + 1)] = * nodeMap.find(pIndex + std::to_string(i));
-        }
-        nodeMap = tempMap;
-    }
-    // create tempIndex as index + /0 (EX: "0/0/1" -> 0/0/1/0)
-    std:: string cIndex = index + "/";
+void MainWindow::splitNode(std::string index) {
+    qDebug("Splitting node %s", index.c_str());
+    // Extract parent path
+    size_t lastSlash = index.find_last_of('/');
+    std::string parentPath = (lastSlash != std::string::npos) ?
+                                 index.substr(0, lastSlash) : "";
+    // Extract pure index
+    std::string pureIndex = index;
+    if(lastSlash != std::string::npos) pureIndex.erase(0, parentPath.length() + 1);
+    // Get index's number of children
     int childNum = 0;
-    // while adding + 1 to the end of tempIndex has a mapping
-    while (nodeMap.contains(cIndex + std::to_string(childNum))){
-        childNum ++;
-        // get amount at that level
+    int iLevel = std::count(index.begin(), index.end(), '/');
+    for (auto [key, node] : nodeMap.asKeyValueRange()){
+        if (key.find(index) == 0){
+            int level = std::count(key.begin(), key.end(), '/');
+            if (level - 1 == iLevel) childNum ++;
+        }
     }
-    // for the right half of the mapping at that level
-    QMap<std::string, QGroupBox *> tempMap;
-    for (int i = childNum / 2; i < childNum; i ++){
-        // change index to newsibling id + i (EX: "0/0/1/3" -> "0/0/2/0")
-        int j = i - childNum/2;
-        tempMap[tIndex + std::to_string(j)] = * nodeMap.find(tIndex + std::to_string(i));
-    }
-    nodeMap = tempMap;
-    // create new sibling node with index + 1
-    createNode(pIndex + std::to_string(stoi(tIndex) + 1));
-    // run respace function
-    respaceNodes();
+    int midway = childNum / 2;
 
+    // Renumber existing nodes
+    QMap<std::string, QGroupBox*> newMap;
+    for (auto [key, node] : nodeMap.asKeyValueRange()) {
+        qDebug("\tCurrent Key: %s", key.c_str());
+        if (index == key) {
+            if (parentPath == ""){
+                newMap["0/" + key] = node;
+                qDebug("\tNew Key: 0/%s\n", key.c_str());
+            }
+            else {
+                newMap[key] = node;
+                qDebug("\tNew Key: %s\n", key.c_str());}
+        }
+        // Check if Child
+        else if (key.find(index) == 0) {
+            qDebug("\tChild of node");
+            std::string newKey = parentPath;
+            if (newKey == "") newKey += "0/";
+            else newKey += "/";
+            // For child reassignment
+            std::string midKey = key.substr(index.length() + 1);
+            std::string endKey = midKey;
+            if (midKey.find_first_of("/") != std::string::npos){
+                midKey.erase(midKey.find_first_of("/"),midKey.length() - 1);
+                endKey.erase(0, endKey.find_first_of("/"));
+            }
+            else endKey = "";
+
+            // Check if to the Left
+            if (stoi(midKey) < midway){
+                newKey += pureIndex + "/" + midKey + endKey;
+            }
+            else newKey += std::to_string(stoi(pureIndex) + 1) + "/" + std::to_string(stoi(midKey) - midway) + endKey;
+            newMap[newKey] = node;
+            qDebug("\tNew Key: %s\n\tMid Key: %s\n\tEnd Key: %s\n", newKey.c_str(), midKey.c_str(),endKey.c_str());
+        // Check if Sibling or Niece
+        } else if (key.find(parentPath) == 0 && key.length() != parentPath.length()) {
+            qDebug("\tSibling of node");
+            std::string midKey = key.substr(parentPath.length() + 1);
+            std::string endKey = midKey;
+            // Check if Niece
+            if(midKey.find_first_of("/") != std::string::npos){
+                midKey.erase(midKey.find_first_of("/"),midKey.length() - 1);
+                endKey.erase(0, endKey.find_first_of("/"));
+            }
+            else endKey = "";
+            std::string newKey = parentPath;
+            if (newKey == "") newKey += "0/";
+            else newKey += "/";
+            // Check if to the Left
+            if (stoi(midKey) <= stoi(pureIndex)){
+                newKey += midKey + endKey;
+            }
+            else newKey += std::to_string(stoi(midKey) + 1) + endKey;
+            newMap[newKey] = node;
+            qDebug("\tNew Key: %s\n", newKey.c_str());
+        } else {
+            newMap[key] = node;
+            qDebug("\tNew Key: %s\n", key.c_str());
+        }
+    }
+
+    nodeMap = newMap;
 }
+
 void MainWindow::runAnimationString(std::string inst){
-    ui->spawnNode->setTitle(QString::fromStdString(inst));
     for(char& c : inst){
         callAnimation(c);
     }
@@ -1086,36 +605,48 @@ void MainWindow::callAnimation(char c){
         keyStr = "";
         refStr = "";
         indStr = "";
+        // Trigger respacing
+        respaceNodes();
         break;
     case 'n': // Add node
         createNode(indStr);
         keyStr = "";
         refStr = "";
         indStr = "";
-        break;
-    case 'm': // make node a childe
-        makeChild(indStr, refStr);
-        keyStr = "";
-        refStr = "";
-        indStr = "";
+        // Trigger respacing
+        respaceNodes();
         break;
     case 'g': // Move to Node
-        gotoNode(keyStr, indStr, refStr);
+        gotoNode(indStr, refStr,keyStr);
         keyStr = "";
         refStr = "";
         indStr = "";
+        // Trigger respacing
+        respaceNodes();
         break;
     case 'c': // Compare
         compareTiles(keyStr, refStr, indStr);
         keyStr = "";
         refStr = "";
         indStr = "";
+        // Trigger respacing
+        respaceNodes();
         break;
     case 'r': // Delete key
         removeTile(keyStr, refStr);
         keyStr = "";
         refStr = "";
         indStr = "";
+        // Trigger respacing
+        respaceNodes();
+        break;
+    case 's': // split node
+        splitNode(indStr);
+        keyStr = "";
+        refStr = "";
+        indStr = "";
+        // Trigger respacing
+        respaceNodes();
         break;
     case '.': // New int
         if(keyStr == "") keyStr = intStr;
@@ -1123,8 +654,12 @@ void MainWindow::callAnimation(char c){
         intStr = "";
         break;
     case '*': // New int
-        if(indStr == "") indStr = intStr;
-        else refStr = intStr;
+        if(indStr == "") {
+            qDebug("Setting Index to %s\n",intStr.c_str());
+            indStr = intStr;}
+        else {
+            qDebug("Setting Reference Index to %s\n",intStr.c_str());
+            refStr = intStr;}
         intStr = "";
         break;
     default:
@@ -1134,20 +669,3 @@ void MainWindow::callAnimation(char c){
     }
 }
 
-/*
-void MainWindow::lineAnimation(QPushButton* parent, QPushButton* child){//Jmods
-    if(!parent || !child) return;
-
-    QRect parentPos = parent->geometry();
-    QRect childPos = child->geometry();
-
-    QPoint lineParent = QPoint(parentPos.center().x(), parentPos.center().y());
-    QPoint lineChild = QPoint(childPos.center().x(), childPos.center().y());
-
-    movingPoint = lineParent;
-    lineAnimationStep = 0;
-    drawingLine = true;
-    lineAnimationTimer->start(10);
-
-}
-*/

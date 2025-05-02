@@ -15,6 +15,7 @@ SOURCES += \
     BTree.cpp \
     BTreeNode.cpp \
     BTreeWidget.cpp \
+    depreciatedmainwindow.cpp \
     main.cpp \
     mainwindow.cpp
 
@@ -25,6 +26,7 @@ HEADERS += \
     BTree.h \
     BTreeNode.h \
     BTreeWidget.h \
+    depreciatedmainwindow.h \
     mainwindow.h \
 
 FORMS += \
